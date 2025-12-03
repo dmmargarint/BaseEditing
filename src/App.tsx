@@ -1,16 +1,22 @@
 import {useState} from "react";
-import SequenceInput from './components/SequenceInput.tsx';
+import EditorConfigPanel from './components/EditorConfigPanel.tsx';
+import SeqViz from "seqviz";
+import type {EditorConfig} from "./editors/editorTypes.ts";
+import type {Guide} from "./guides/guide.ts";
+import {ALL_EDITORS} from "./editors/editorList.ts";
+import type {Mutation} from "./mutations/mutation.ts";
 
  // TODO if contains internal PAM, discard guide
+ // TODO filter the input before it gets to seqviz
 
 function App() {
     const [dnaSequence, setDnaSequence] = useState<string>("");
     const [dnaSequenceInView, setDnaSequenceInView] = useState<string>("");
     const [guideRNAs, setGuideRNAs] = useState<GuideRNA[]>([]);
     const [error, setError] = useState<string>("");
-    const [cas9Type, setCas9Type] = useState('spCas9');
     const [complement, setComplement] = useState<string>("");
     const [reverseComplement, setReverseComplement] = useState<string>("");
+    const [selectedEditorName, setSelectedEditorName] = useState<string>("ABE8e_SpCas9");
 
     const validateSequence = (sequence: string): boolean => {
         const cleanSeq = sequence.replace(/\s/g, '').toUpperCase();
@@ -18,16 +24,6 @@ function App() {
         return validPattern.test(cleanSeq);
     };
 
-    const cas9Types = ["SpCas9", "SaCas9"];
-
-    interface PamSequence {
-        [key: string]: string;
-    }
-
-    const PamSequences: PamSequence = {
-        "SpCas9": "NGG",
-        "SaCas9": "NGGRRT",
-    }
     const complements = {
         "A": "T",
         "T": "A",
@@ -48,47 +44,65 @@ function App() {
         setDnaSequenceInView(dnaSequence);
 
 
-        let compl = findComplement(dnaSequence)
-        if (compl !== null) {
-            setComplement(compl);
-            setReverseComplement(compl.split("").reverse().join(""));
-        }
+        // let compl = findComplement(dnaSequence)
+        // if (compl !== null) {
+        //     setComplement(compl);
+        //     setReverseComplement(compl.split("").reverse().join(""));
+        // }
+        //
+        // let pattern = /(.GG)+/dg;
+        // let regex;
+        // try {
+        //     regex = new RegExp(pattern);
+        // } catch (e) {
+        //     console.log(e);
+        //     return;
+        // }
+        //
+        // let result = "";
+        // let lastIndex = 0;
+        // let start = 0;
+        // let end = 0;
+        // let match;
+        //
+        // while ((match = regex.exec(dnaSequence)) !== null) {
+        //     start = match.index;
+        //     end = start + match[0].length;
+        //
+        //     // TODO create React components
+        //     // split string from last index to current index
+        //
+        //     result += dnaSequence.slice(lastIndex, start);
+        //     result += `<span class="PAM" style="color: red">${match[0]}</span>`;
+        //     lastIndex = end;
+        //
+        //     // avoids indefinite loops on zero length character matches
+        //     if (regex.lastIndex === match.index) {
+        //         regex.lastIndex++;
+        //     }
+        // }
+        // console.log(result);
+        // setDnaSequenceInView(result);
 
-        let pattern = /(.GG)+/dg;
-        let regex;
-        try {
-            regex = new RegExp(pattern);
-        } catch (e) {
-            console.log(e);
-            return;
-            // TODO add return here
-        }
+        // const editor = ALL_EDITORS.find(ed => ed.name === selectedEditorName);
+    }
 
-        let result = "";
-        let lastIndex = 0;
-        let start = 0;
-        let end = 0;
-        let match;
+    function designGuidesAroundMutation(
+        seq: string,
+        mutation: Mutation,
+        editor: EditorConfig
+    ): Guide[] {
+    let guides: Guide[] = [];
 
-        while ((match = regex.exec(dnaSequence)) !== null) {
-            start = match.index;
-            end = start + match[0].length;
+        // 1. Determine target strand using editor.targetBase
+        // 2. Scan for PAMs using editor.pamPatterns
+        // 3. Extract protospacers of editor.guideLength
+        // 4. Handle PAM orientation (Cas9 vs Cas12a)
+        // 5. Identify editable bases using editor.activityWindows
+        // 6. Identify bystanders based on editor.targetBase
+        // 7. Score guides, return sorted list
 
-            // TODO create React components
-            // split string from last index to current index
-
-            result += dnaSequence.slice(lastIndex, start);
-            result += `<span class="PAM" style="color: red">${match[0]}</span>`;
-            lastIndex = end;
-
-            // avoids indefinite loops on zero length character matches
-            if (regex.lastIndex === match.index) {
-                regex.lastIndex++;
-            }
-        }
-        console.log(result);
-        setDnaSequenceInView(result);
-
+        return guides;
     }
 
     function findComplement(dnaSeq: string): string | null {
@@ -106,17 +120,28 @@ function App() {
 
     return (
         <>
+            {selectedEditorName}
             <div className="">
-                <SequenceInput
+                <EditorConfigPanel
                     textInput={dnaSequence}
                     onSequenceChange={setDnaSequence}
-                    cas9Types={cas9Types}
-                    PamSequences={PamSequences}
-                    onCas9TypeChange={setCas9Type}
                     onAnalyse={onAnalyse}
+                    selectedEditorName={selectedEditorName}
+                    setSelectedEditorName={setSelectedEditorName}
                 />
-
             </div>
+
+            { dnaSequence && (
+                <div style={{ width: 800, height: 400 }}>
+                    <SeqViz
+                        name="DNA Sequence"
+                        seq={dnaSequence}
+                        annotations={[{ name: "promoter", start: 0, end: 34, direction: 1, color: "blue" }]}
+                        // viewer="linear"
+                        style={{ width: "100%", height: "100%" }}
+                    />
+                </div>
+             )}
             <div className="">
                 <div dangerouslySetInnerHTML={{ __html: 'ORIGINAL SEQ: '+dnaSequenceInView }}/>
             </div>
