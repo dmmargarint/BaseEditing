@@ -12,11 +12,11 @@ import type {Mutation} from "./mutations/mutation.ts";
 function App() {
     const [dnaSequence, setDnaSequence] = useState<string>("");
     const [dnaSequenceInView, setDnaSequenceInView] = useState<string>("");
-    const [guideRNAs, setGuideRNAs] = useState<GuideRNA[]>([]);
     const [error, setError] = useState<string>("");
     const [complement, setComplement] = useState<string>("");
     const [reverseComplement, setReverseComplement] = useState<string>("");
     const [selectedEditorName, setSelectedEditorName] = useState<string>("ABE8e_SpCas9");
+    const [desiredEdit, setDesiredEdit] = useState<string>("A_TO_G");
 
     const validateSequence = (sequence: string): boolean => {
         const cleanSeq = sequence.replace(/\s/g, '').toUpperCase();
@@ -85,6 +85,8 @@ function App() {
         // setDnaSequenceInView(result);
 
         // const editor = ALL_EDITORS.find(ed => ed.name === selectedEditorName);
+
+        console.log()
     }
 
     function designGuidesAroundMutation(
@@ -94,7 +96,20 @@ function App() {
     ): Guide[] {
     let guides: Guide[] = [];
 
+        let testSeq = "";
+
+        type targetStrandType = "PLUS" | "MINUS";
+
+        let targetStrand: targetStrandType = "PLUS";
+
+        // PLUS or MINUS
+        // let targetStrand = "PLUS";
         // 1. Determine target strand using editor.targetBase
+        let mutationPos = 2;
+
+
+
+
         // 2. Scan for PAMs using editor.pamPatterns
         // 3. Extract protospacers of editor.guideLength
         // 4. Handle PAM orientation (Cas9 vs Cas12a)
@@ -102,7 +117,13 @@ function App() {
         // 6. Identify bystanders based on editor.targetBase
         // 7. Score guides, return sorted list
 
+
+
         return guides;
+    }
+
+    function callb(e){
+        console.log(e);
     }
 
     function findComplement(dnaSeq: string): string | null {
@@ -128,17 +149,20 @@ function App() {
                     onAnalyse={onAnalyse}
                     selectedEditorName={selectedEditorName}
                     setSelectedEditorName={setSelectedEditorName}
+                    desiredEdit={desiredEdit}
+                    setDesiredEdit={setDesiredEdit}
                 />
             </div>
 
             { dnaSequence && (
                 <div style={{ width: 800, height: 400 }}>
                     <SeqViz
-                        name="DNA Sequence"
+                        // name="DNA Sequence"
                         seq={dnaSequence}
                         annotations={[{ name: "promoter", start: 0, end: 34, direction: 1, color: "blue" }]}
                         // viewer="linear"
                         style={{ width: "100%", height: "100%" }}
+                        onSelection={(s) => {callb(s)}}
                     />
                 </div>
              )}

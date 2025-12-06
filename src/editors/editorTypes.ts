@@ -33,7 +33,7 @@ export interface EditorConfig {
      * Position(s) in the protospacer, relative to PAM, where editing occurs.
      * Example: ABE7.10 uses positions 4-8 (1-indexed from PAM-proximal end).
      */
-    activityWindows: Array<{ from: number; to: number }>;
+    activityWindows: { from: number; to: number };
 
     /**
      * Orientation rules:

@@ -9,7 +9,7 @@ export const ABE8e_SpCas9: EditorConfig = {
     nuclease: "SpCas9",
     pamPatterns: ["NGG"],
     guideLength: 20,
-    activityWindows: [{ from: 4, to: 8 }],
+    activityWindows: { from: 4, to: 8 },
     pamOrientation: "PAM_3prime",
     notes: "High-efficiency ABE with narrow editing window."
 }
@@ -22,7 +22,8 @@ export const ABE8e_SaCas9: EditorConfig = {
     nuclease: "SaCas9",
     pamPatterns: ["NNGRRT"],
     guideLength: 21,
-    activityWindows: [{ from: 4, to: 12 }],
+    // activityWindows: [{ from: 4, to: 12 }],
+    activityWindows: { from: 4, to: 12 },
     pamOrientation: "PAM_3prime",
     notes: ""
 }

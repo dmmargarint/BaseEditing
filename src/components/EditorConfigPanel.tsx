@@ -1,4 +1,5 @@
 import {ALL_EDITORS} from "../editors/editorList.ts";
+import {ALL_EDIT_REQUESTS} from "../mutations/mutation.ts";
 
 interface Props {
     textInput: string;
@@ -6,6 +7,8 @@ interface Props {
     onAnalyse: () => void;
     selectedEditorName: string;
     setSelectedEditorName: (name: string) => void;
+    desiredEdit: string;
+    setDesiredEdit: (edit: string) => void;
 }
 
 function EditorConfigPanel({
@@ -14,6 +17,8 @@ function EditorConfigPanel({
                            onAnalyse,
                            selectedEditorName,
                            setSelectedEditorName,
+                               desiredEdit,
+                           setDesiredEdit,
                        }: Props
 
 )
@@ -49,6 +54,17 @@ function EditorConfigPanel({
                             {ed.name}
                         </option>
                     ))}
+                </select>
+
+                <legend className="fieldset-legend">Desired Edit</legend>
+                <select
+                    className="select block w-full"
+                    value={desiredEdit}
+                    onChange={(e) => setDesiredEdit(e.target.value)}
+                >
+                    <option key="A_TO_G" value="A_TO_G">A &rarr; G</option>
+                    <option key="C_TO_T" value="C_TO_T">C &rarr; T</option>
+                    {/*<option key="auto" value="auto">Detect Automatically from Selected Base</option>*/}
                 </select>
 
                 <button
