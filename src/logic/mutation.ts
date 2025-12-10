@@ -62,7 +62,6 @@ export function detectMutationTargetStrand(
             originalBase: base,
             desiredBase: desiredEdit.toBase
         }
-        // throw new Error("Nucleotide does not match complement");
     }
 
     return {

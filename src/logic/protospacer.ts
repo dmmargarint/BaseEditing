@@ -1,7 +1,16 @@
-import type {EditorConfig, PAMSite} from "./editorTypes.ts";
+import type {EditorConfig, PAMSite, Strand} from "./editorTypes.ts";
+
+export type Protospacer = {
+    sequence: string;      //  5'->3' as it binds the target strand
+    start: number;         // 0-based index on user DNA
+    end: number;           // exclusive, TODO verify
+    guideStrand: Strand;   // which strand the guide binds to
+    pam: PAMSite;
+    length: number
+}
 
 // TODO create a protospacer type for this return
-export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor: EditorConfig) {
+export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor: EditorConfig): Protospacer {
     let protospacerStart: number;
     let protospacerEnd: number;    // end-exclusive
     let slicePlusStrand: string;
@@ -16,7 +25,8 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
             return {
                 guideStrand: "-",    // the guide will bind to the opposite strand
                 sequence: slicePlusStrand,
-                editor: editor,
+                start: protospacerStart,
+                end: protospacerEnd,
                 pam: pam,
                 length: slicePlusStrand.length,
             };
@@ -24,15 +34,18 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
             protospacerStart = pam.startPos + 1;
             protospacerEnd = protospacerStart + editor.guideLength;
 
+            // protospacerStart = pam.startPos + 1 + editor.guideLength;
+            // protospacerEnd = protospacerStart;
+
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
             return {
-                guideStrand: "+",
+                guideStrand: "+",    // the guide will bind to the opposite strand
                 sequence: slicePlusStrand,
-                editor: editor,
+                start: protospacerStart,
+                end: protospacerEnd,
                 pam: pam,
                 length: slicePlusStrand.length,
             };
-
         }
     }
 
@@ -44,9 +57,10 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
             return {
-                guideStrand: "-",
+                guideStrand: "-",    // the guide will bind to the opposite strand
                 sequence: slicePlusStrand,
-                editor: editor,
+                start: protospacerStart,
+                end: protospacerEnd,
                 pam: pam,
                 length: slicePlusStrand.length,
             };
@@ -58,9 +72,10 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
             return {
-                guideStrand: "+",
+                guideStrand: "+",    // the guide will bind to the opposite strand
                 sequence: slicePlusStrand,
-                editor: editor,
+                start: protospacerStart,
+                end: protospacerEnd,
                 pam: pam,
                 length: slicePlusStrand.length,
             };
