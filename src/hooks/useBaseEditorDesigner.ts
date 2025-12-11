@@ -5,7 +5,7 @@ import {designGuidesAroundMutation} from "../logic/guides.ts";
 import {ALL_EDIT_REQUESTS, type EditRequestConfig} from "../logic/mutation.ts";
 
 export function useBaseEditorDesigner () {
-    const [DNASequence, setDNASequence] = useState<string>("CCTTTTTTTTTATGTACGATGCCCCCCCCCTGG");
+    const [DNASequence, setDNASequence] = useState<string>("CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG");
     const [error, setError] = useState<string>("");
     const [selectedEditorName, setSelectedEditorName] = useState<string>("ABE8e (SpCas9)");
     const [desiredEdit, setDesiredEdit] = useState<"A_TO_G" | "C_TO_T">("A_TO_G");

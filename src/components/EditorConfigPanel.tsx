@@ -78,16 +78,6 @@ function EditorConfigPanel({
                     {/*<option key="auto" value="auto">Detect Automatically from Selected Base</option>*/}
                 </select>
 
-                {/*<legend className="fieldset-legend">Target Strand</legend>*/}
-                {/*<select*/}
-                {/*    className="select block w-full"*/}
-                {/*    value={targetStrand}*/}
-                {/*    onChange={(e) => setTargetStrand(e.target.value)}*/}
-                {/*>*/}
-                {/*    <option key="+" value="+">+ (Forward Strand)</option>*/}
-                {/*    <option key="-" value="-">- (Reverse Strand)</option>*/}
-                {/*</select>*/}
-
                 <legend className="fieldset-legend">Mutation Position (or highlight the mutation in the visualiser)</legend>
                 <input type="text"
                     className="input block w-full"

@@ -15,10 +15,12 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
     let protospacerEnd: number;    // end-exclusive
     let slicePlusStrand: string;
 
-    // 5' - Protospacer - PAM - 3'
+    let L = editor.guideLength;
+
+    // 5' - Protospacer - PAM - 3' TOP STRAND
     if (editor.pamOrientation === "PAM_3prime") {
         if (pam.strand === "+") {
-            protospacerStart = pam.startPos - editor.guideLength;
+            protospacerStart = pam.startPos - L;
             protospacerEnd = pam.startPos;
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
@@ -31,11 +33,8 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
                 length: slicePlusStrand.length,
             };
         } else {
-            protospacerStart = pam.startPos + 1;
-            protospacerEnd = protospacerStart + editor.guideLength;
-
-            // protospacerStart = pam.startPos + 1 + editor.guideLength;
-            // protospacerEnd = protospacerStart;
+            protospacerStart = pam.endPos;
+            protospacerEnd = protospacerStart + L;
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
             return {
@@ -49,11 +48,11 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
         }
     }
 
-    // 5' - PAM - Protospacer - 3'
+    // 5' - PAM - Protospacer - 3' TOP STRAND
     if (editor.pamOrientation === "PAM_5prime") {
         if (pam.strand === "+") {
             protospacerStart = pam.endPos;
-            protospacerEnd = pam.endPos + editor.guideLength;
+            protospacerEnd = pam.endPos + L;
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);
             return {
@@ -66,8 +65,8 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
             };
 
         } else {
-            // TODO test
-            protospacerStart = pam.startPos + editor.guideLength;
+            // TODO rewrite
+            protospacerStart = pam.startPos - L;
             protospacerEnd = pam.startPos;
 
             slicePlusStrand = sequence.substring(protospacerStart, protospacerEnd);

@@ -37,17 +37,14 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
             const rcMatchStart = match.index;       // first base of RC pattern on +
 
             // That last base in RC corresponds to the 5' base of PAM on the MINUS strand. (CCN -> NGG)
-            const rcMatchEnd = rcMatchStart + pamLen - 1; // last base index on +
+            const rcMatchEnd = rcMatchStart + pamLen; // last base index on +
 
             results.push({
                 strand: "-",
                 pattern: pam,
-                pamSeq: upperSeq.slice(
-                    rcMatchStart,
-                    rcMatchStart + pamLen
-                ),                                    // CCN etc. as seen on +
-                startPos: rcMatchEnd,            // 5' base of NGG on −, in + coords
-                endPos: rcMatchEnd + pamLen,     // virtual end (still length pamLen)
+                pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd),                                    // CCN etc. as seen on +
+                startPos: rcMatchEnd,   // 5' base of NGG on −, in + coords
+                endPos: rcMatchEnd,     // exclusive
             });
 
             if (minusRegex.lastIndex === match.index) {
