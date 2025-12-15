@@ -49,7 +49,7 @@ export interface PAMSite {
     endPos: number;
 
     /** The strand PAM is located on, + or - */
-    strand: Strand | null;
+    strand: Strand;
 
     /** IUPAC Pattern e.g. NGG */
     pattern: string;

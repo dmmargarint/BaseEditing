@@ -5,16 +5,34 @@ import {extractProtospacerFromPam, type Protospacer} from "./protospacer.ts";
 import {detectMutationTargetStrand, type EditRequestConfig} from "./mutation.ts";
 
 export type Guide = {
-    guideStrand: Strand,
-    guideSequence: string,
-    length?: number,
-    protospacer: Protospacer,
-    editWindowLowerLimit: number,
-    editWindowUpperLimit: number,
+  guideStrand: Strand,
+  seq: string,
+  length?: number,
+  protospacer: Protospacer,
+  editsSimulation: GuideEditSimulation,
+  summary: GuideEditSummary
+}
+
+interface SimulatedEdit {
+  pos0: number;
+  originalBase: string;
+  newBase: string;
+}
+
+interface GuideEditSimulation {
+  finalSeq: string;           // plus-strand after all edits for THIS guide
+  edits: SimulatedEdit[];     // includes main + bystanders
+}
+
+export interface GuideEditSummary {
+  hitsDesiredSite: boolean;
+  desiredEdit?: SimulatedEdit;      // if hitsDesiredSite === true
+  bystanders: SimulatedEdit[];      // all edits except the main site
+  numBystanders: number;
+  score: number;                    // higher = better (e.g. hit - penalty * bystanders)
 }
 
 // TODO create type mutation, nr for now
-// TODO create type guide
 export function designGuidesAroundMutation(
     seq: string,
     mutationPos0: number,
@@ -23,7 +41,7 @@ export function designGuidesAroundMutation(
     editor: EditorConfig
 ): Guide[] {
 
-    let guides: Guide[] = [];
+    const guides: Guide[] = [];
 
     // 1. Determine target strand using editor.targetBase
     // TODO decide how to approach the desired target strand vs actual
@@ -32,24 +50,61 @@ export function designGuidesAroundMutation(
     // TODO hold on to this idea, might need refactoring
 
     // 2. Scan for PAMs using editor.pamPatterns
-    let PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
+    const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
     console.log("PAMs:");
     console.log(PAMs);
 
-    let targetStrand: Strand = detectMutationTargetStrand(seq, mutationPos0, desiredEdit, editor);
-    console.log(targetStrand);
+    // let targetStrand: Strand = detectMutationTargetStrand(seq, mutationPos0, desiredEdit, editor);
+    // console.log(targetStrand);
 
     // 3. Extract protospacers of editor.guideLength
-    let protospacers: Protospacer[] = [];
-    PAMs.map((pam: PAMSite) => {
+    const protospacers: Protospacer[] = [];
+
+    for (const pam of PAMs) {
         const protospacer = extractProtospacerFromPam(seq, pam, editor);
+
+        if (protospacer === null) {
+          continue;
+        }
         protospacers.push(protospacer);
 
-        let editablePositions = findEditablePositionsInWindow(seq, protospacer, editor, desiredEdit, null);
-        console.log(editablePositions);
-    });
+        const editablePositions: [] = findEditablePositionsInWindow(seq, protospacer, editor, desiredEdit, null);
+
+        // decide which strand is EDITED for this guide (not the guide strand)
+        // TODO rewrite for different editors
+        const editedStrand: Strand = pam.strand;
+
+        const edits = simulateGuideEdits(seq, protospacer, editablePositions, desiredEdit, editedStrand);
+
+        const guideSummary = evaluateGuideSimulation(edits, mutationPos0);
+
+        guides.push({
+          seq: findReverseComplement(protospacer.sequence) ?? "",
+          guideStrand: editedStrand === "+" ? "-" : "+",  // inverse of edited strand
+          length: protospacer.length,
+          protospacer: protospacer,
+          editsSimulation: edits,
+          summary: guideSummary,
+        });
+
+        // console.log("Guide summary:");
+        // console.log(guideSummary);
+
+        // console.log(editablePositions);
+    }
+
+    console.log("Guides:");
+    console.log(guides);
+
     console.log("Protospacers:");
     console.log(protospacers);
+
+    // CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG
+    // CCTTGTTTTTTATGTGGGATGCCCCCCCCCTGG
+
+
+    // if (!isPositionInEditingWindow(mutationPos0, protospacer, editor))
+    //     protospacers.push(protospacer);
 
     /**
      * The editing window is always counted from the 5' end
@@ -61,50 +116,50 @@ export function designGuidesAroundMutation(
      */
 
     // TODO should I check the 5Prime vs 3Prime PAM direction
-    protospacers.map((protospacer: Protospacer) => {
-        const protStart = protospacer.start;
-        const protEnd = protospacer.end;
-        if (protospacer.pam.strand === "+") {
-
-            let editWindowLowerLimit = protStart + editor.activityWindows.from;
-            let editWindowUpperLimit = protStart + editor.activityWindows.to;
-
-            if (mutationPos0 >= editWindowLowerLimit && mutationPos0 <= editWindowUpperLimit) {
-                let revcomp = findReverseComplement(protospacer.sequence);
-                guides.push({
-                    guideStrand: "-",
-                    guideSequence: revcomp,
-                    length: revcomp?.length,
-                    protospacer: protospacer,
-                    editWindowLowerLimit: editWindowLowerLimit,
-                    editWindowUpperLimit: editWindowUpperLimit,
-                });
-            }
-        } else {
-            // TODO explain why
-            let editWindowLowerLimit = protEnd - editor.activityWindows.to;
-            let editWindowUpperLimit = protEnd - editor.activityWindows.from;
-
-            if (mutationPos0 >= editWindowLowerLimit && mutationPos0 <= editWindowUpperLimit) {
-                let revcomp = findReverseComplement(protospacer.sequence);
-                guides.push({
-                    guideStrand: "+",
-                    guideSequence: revcomp,
-                    length: revcomp?.length,
-                    protospacer: protospacer,
-                    editWindowLowerLimit: editWindowLowerLimit,
-                    editWindowUpperLimit: editWindowUpperLimit,
-                });
-            }
-        }
-    });
+    // protospacers.map((protospacer: Protospacer) => {
+    //     const protStart = protospacer.start;
+    //     const protEnd = protospacer.end;
+    //     if (protospacer.pam.strand === "+") {
+    //
+    //         let editWindowLowerLimit = protStart + editor.activityWindows.from;
+    //         let editWindowUpperLimit = protStart + editor.activityWindows.to;
+    //
+    //         if (mutationPos0 >= editWindowLowerLimit && mutationPos0 <= editWindowUpperLimit) {
+    //             let revcomp = findReverseComplement(protospacer.sequence);
+    //             guides.push({
+    //                 guideStrand: "-",
+    //                 guideSequence: revcomp,
+    //                 length: revcomp?.length,
+    //                 protospacer: protospacer,
+    //                 editWindowLowerLimit: editWindowLowerLimit,
+    //                 editWindowUpperLimit: editWindowUpperLimit,
+    //             });
+    //         }
+    //     } else {
+    //         // TODO explain why
+    //         let editWindowLowerLimit = protEnd - editor.activityWindows.to;
+    //         let editWindowUpperLimit = protEnd - editor.activityWindows.from;
+    //
+    //         if (mutationPos0 >= editWindowLowerLimit && mutationPos0 <= editWindowUpperLimit) {
+    //             let revcomp = findReverseComplement(protospacer.sequence);
+    //             guides.push({
+    //                 guideStrand: "+",
+    //                 guideSequence: revcomp,
+    //                 length: revcomp?.length,
+    //                 protospacer: protospacer,
+    //                 editWindowLowerLimit: editWindowLowerLimit,
+    //                 editWindowUpperLimit: editWindowUpperLimit,
+    //             });
+    //         }
+    //     }
+    // });
 
     console.log("Guides:");
     console.log(guides);
 
-    guides.map((guide: Guide) => {
-        simulateGuideEdits(seq, guide, desiredEdit, targetStrand.targetStrand);
-    });
+    // guides.map((guide: Guide) => {
+    //     simulateGuideEdits(seq, guide, desiredEdit, targetStrand.targetStrand);
+    // });
 
     // TODO apply edits
 
@@ -114,6 +169,38 @@ export function designGuidesAroundMutation(
 
     return guides;
 }
+//
+// function getEditedStrandForGuide(
+//     pam: PAMSite,
+//     editor: EditorConfig
+// ) {
+//     const pamStrand = pam.strand;
+//
+//     return pamStrand;
+// }
+
+function evaluateGuideSimulation(
+  sim: GuideEditSimulation,
+  mutationPos0
+): GuideEditSummary {
+
+  const desiredEdit = sim.edits.find(e => e.pos0.position === mutationPos0) || null;
+  const bystanders  = sim.edits.filter(e => e.pos0.position !== mutationPos0);
+
+  const hitsDesiredSite = !!desiredEdit;
+  const numBystanders = bystanders.length;
+
+  // TODO compute score
+  const score = 0;
+
+  return {
+    hitsDesiredSite,
+    desiredEdit: desiredEdit || undefined,
+    bystanders,
+    numBystanders,
+    score
+  };
+}
 
 function findEditablePositionsInWindow(
     seq: string,
@@ -121,22 +208,21 @@ function findEditablePositionsInWindow(
     editor: EditorConfig,
     desiredEdit: EditRequestConfig,
     mutation
-): number[] {
-    const results: number[] = [];
+): [] {
+    const results: [] = [];
     const bases = seq.split("");
 
-    let newPlusBase: string;
-    let windowStart: number = 0;
-    let windowEnd: number = 0;
+    const windowStart: number = protospacer.editWindowStart;
+    const windowEnd: number = protospacer.editWindowEnd;
 
-    if (protospacer.pam.strand === "+") {
-        windowStart = protospacer.start + editor.activityWindows.from;
-        windowEnd = protospacer.start + editor.activityWindows.to;
-
-    } else {
-        windowStart = protospacer.end - editor.activityWindows.to;
-        windowEnd = protospacer.end - editor.activityWindows.from;
-    }
+    // TODO rewrite using protospacer.editWindowStart and end
+    // if (protospacer.pam.strand === "+") {
+    //     windowStart = protospacer.start + editor.activityWindows.from;
+    //     windowEnd = protospacer.start + editor.activityWindows.to;
+    // } else {
+    //     windowStart = protospacer.end - editor.activityWindows.to;
+    //     windowEnd = protospacer.end - editor.activityWindows.from;
+    // }
 
     for (let i = windowStart; i < windowEnd; i++) {
         const plusStrandBase = bases[i];
@@ -145,19 +231,24 @@ function findEditablePositionsInWindow(
             if (plusStrandBase !== desiredEdit.fromBase) {
                 continue;
             }
-            results.push(i);
+            results.push({
+                position: i,
+                positionInWindow: i - windowStart,
+                // base: bases[i], // Plus Strand
+            });
         } else {
             const fromComp = COMPLEMENT[desiredEdit.fromBase];
             if (plusStrandBase !== fromComp) {
                 continue;
             }
-            results.push(i);
-
+            results.push({
+                position: i,
+                positionInWindow: i - windowStart,
+                // base: bases[i], // Plus Strand
+            });
         }
-
     }
-
-    return results
+    return results;
 }
 
 function applyEdit(
@@ -190,7 +281,7 @@ function applyEdit(
     bases[pos0] = newPlusBase;
 
     return {
-        // originalSeq: seq,
+        originalSeq: seq,
         editedSeq: bases.join(""),
         originalBase: plusStrandBase,
         newBase: newPlusBase,
@@ -199,27 +290,69 @@ function applyEdit(
     }
 }
 
-function simulateGuideEdits(seq: string, guide: Guide, desiredEdit: EditRequestConfig, targetStrand: Strand) {
+function simulateGuideEdits(
+    seq: string,
+    prot: Protospacer,
+    editableBasesInWindow: [],
+    desiredEdit: EditRequestConfig,
+    targetStrand: Strand
+) {
+    let workingSeq = seq;
+    const edits: SimulatedEdit[] = [];
     const bases = seq.split("");
-
-    let editableBasesInWindow = [];
 
     let arr = Array(bases.length).fill('-');
 
-    for (let i = guide.editWindowLowerLimit; i < guide.editWindowUpperLimit; i++) {
-        if (bases[i] === desiredEdit.fromBase) {
-            editableBasesInWindow.push(i);
-            let edit = applyEdit(seq, i, desiredEdit, targetStrand);
-            bases[i] = edit.newBase;
-        }
+    const windowStart = prot.editWindowStart;
+    const windowEnd = prot.editWindowEnd;
+
+    for (const pos0 of editableBasesInWindow) {
+        const res = applyEdit(workingSeq, pos0.position, desiredEdit, targetStrand);
+        if (!res) continue;
+
+        workingSeq = res.editedSeq;
+        edits.push({
+           pos0,
+           originalBase: res.originalBase,
+           newBase: res.newBase,
+        });
     }
 
-    editableBasesInWindow.map((i: number) => {
-        arr[i] = '^';
-    });
+    // for (let i = windowStart; i < windowEnd; i++) {
+    //     if (bases[i] === desiredEdit.fromBase) {
+    //         let edit = applyEdit(seq, i, desiredEdit, targetStrand);
+    //         bases[i] = edit.newBase;
+    //     }
+    // }
 
-    console.log(bases.join(""));
-    console.log(arr.join(""));
+    // editableBasesInWindow.map((i: number) => {
+    //     arr[i] = '^';
+    // });
 
-    return {}
+    //
+    // console.log(seq);
+    // console.log(workingSeq);
+
+    return { finalSeq: workingSeq, edits };
+}
+
+function isPositionInEditingWindow(
+    position: number,
+    protospacer: Protospacer,
+    editor: EditorConfig
+): boolean {
+    let windowStart = protospacer.editWindowStart;
+    let windowEnd = protospacer.editWindowEnd;
+
+    // let pamStrand = protospacer.pam.strand;
+
+    // if (pamStrand === "+") {
+    //     windowStart = protospacer.start + editor.activityWindows.from;
+    //     windowEnd = protospacer.start + editor.activityWindows.to;
+    // } else {
+    //     windowStart = protospacer.end - editor.activityWindows.to;
+    //     windowEnd = protospacer.end - editor.activityWindows.from;
+    // }
+
+    return position >= windowStart && position < windowEnd;
 }
