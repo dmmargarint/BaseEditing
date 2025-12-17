@@ -21,6 +21,7 @@ interface SimulatedEdit {
 
 interface GuideEditSimulation {
   finalSeq: string;           // plus-strand after all edits for THIS guide
+  finalSeqOverGuideLength: string; // plus-strand after all edits, covering only the guide length
   edits: SimulatedEdit[];     // includes main + bystanders
 }
 
@@ -68,7 +69,7 @@ export function designGuidesAroundMutation(
         }
         protospacers.push(protospacer);
 
-        const editablePositions: [] = findEditablePositionsInWindow(seq, protospacer, editor, desiredEdit, null);
+        const editablePositions: [] = findEditablePositionsInWindow(seq, protospacer, desiredEdit);
 
         // decide which strand is EDITED for this guide (not the guide strand)
         // TODO rewrite for different editors
@@ -205,24 +206,13 @@ function evaluateGuideSimulation(
 function findEditablePositionsInWindow(
     seq: string,
     protospacer: Protospacer,
-    editor: EditorConfig,
-    desiredEdit: EditRequestConfig,
-    mutation
+    desiredEdit: EditRequestConfig
 ): [] {
     const results: [] = [];
     const bases = seq.split("");
 
     const windowStart: number = protospacer.editWindowStart;
     const windowEnd: number = protospacer.editWindowEnd;
-
-    // TODO rewrite using protospacer.editWindowStart and end
-    // if (protospacer.pam.strand === "+") {
-    //     windowStart = protospacer.start + editor.activityWindows.from;
-    //     windowEnd = protospacer.start + editor.activityWindows.to;
-    // } else {
-    //     windowStart = protospacer.end - editor.activityWindows.to;
-    //     windowEnd = protospacer.end - editor.activityWindows.from;
-    // }
 
     for (let i = windowStart; i < windowEnd; i++) {
         const plusStrandBase = bases[i];
@@ -303,9 +293,6 @@ function simulateGuideEdits(
 
     let arr = Array(bases.length).fill('-');
 
-    const windowStart = prot.editWindowStart;
-    const windowEnd = prot.editWindowEnd;
-
     for (const pos0 of editableBasesInWindow) {
         const res = applyEdit(workingSeq, pos0.position, desiredEdit, targetStrand);
         if (!res) continue;
@@ -333,26 +320,17 @@ function simulateGuideEdits(
     // console.log(seq);
     // console.log(workingSeq);
 
-    return { finalSeq: workingSeq, edits };
+    const finalSeqOverGuideLength = workingSeq.slice(prot.start, prot.end);
+
+    return { finalSeq: workingSeq, finalSeqOverGuideLength, edits };
 }
 
 function isPositionInEditingWindow(
-    position: number,
-    protospacer: Protospacer,
-    editor: EditorConfig
+  position: number,
+  protospacer: Protospacer
 ): boolean {
-    let windowStart = protospacer.editWindowStart;
-    let windowEnd = protospacer.editWindowEnd;
+  const windowStart = protospacer.editWindowStart;
+  const windowEnd = protospacer.editWindowEnd;
 
-    // let pamStrand = protospacer.pam.strand;
-
-    // if (pamStrand === "+") {
-    //     windowStart = protospacer.start + editor.activityWindows.from;
-    //     windowEnd = protospacer.start + editor.activityWindows.to;
-    // } else {
-    //     windowStart = protospacer.end - editor.activityWindows.to;
-    //     windowEnd = protospacer.end - editor.activityWindows.from;
-    // }
-
-    return position >= windowStart && position < windowEnd;
+  return position >= windowStart && position < windowEnd;
 }

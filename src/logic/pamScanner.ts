@@ -41,10 +41,12 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
 
             results.push({
                 strand: "-",
-                pattern: pam,
-                pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd),                                    // CCN etc. as seen on +
                 startPos: rcMatchEnd,   // 5' base of NGG on −, in + coords
                 endPos: rcMatchEnd,     // exclusive
+                pattern: pam,
+                pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd), // CCN etc. as seen on + strand
+
+
             });
 
             if (minusRegex.lastIndex === match.index) {

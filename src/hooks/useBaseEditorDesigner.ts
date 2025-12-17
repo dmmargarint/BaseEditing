@@ -1,19 +1,20 @@
 import {useCallback, useMemo, useState} from "react";
 import type {EditorConfig} from "../logic/editorTypes.ts";
 import {ALL_EDITORS} from "../logic/editorConfigs.ts";
-import {designGuidesAroundMutation} from "../logic/guides.ts";
+import { designGuidesAroundMutation, type Guide } from '../logic/guides.ts';
 import {ALL_EDIT_REQUESTS, type EditRequestConfig} from "../logic/mutation.ts";
 
 export function useBaseEditorDesigner () {
     const [DNASequence, setDNASequence] = useState<string>("CCTTGTTTTTTATGTAATATGCCCCCCCCCTGG");
+    // const [DNASequence, setDNASequence] = useState<string>("CCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCTTGTTTTTTATGTAATATGCCCCCCCCCTGG");
     const [error, setError] = useState<string>("");
     const [selectedEditorName, setSelectedEditorName] = useState<string>("ABE8e (SpCas9)");
     const [desiredEdit, setDesiredEdit] = useState<"A_TO_G" | "C_TO_T">("A_TO_G");
-    const [guides, setGuides] = useState<string[]>([]);
+    const [guides, setGuides] = useState<Guide[]>([]);
     // TODO somehow substract 1
-    const [mutationPos, setMutationPos] = useState<number | string | null>(15);
+    const [mutationPos, setMutationPos] = useState<number>(15);
     const [targetStrand, setTargetStrand] = useState<"+" | "-">("+");
-    const [seqvizHighlight, setSeqvizHighlight] = useState({});
+    // const [seqvizHighlight, setSeqvizHighlight] = useState({});
 
     const editor: EditorConfig = useMemo(
         () => ALL_EDITORS.find((e) => e.name === selectedEditorName),
@@ -26,12 +27,17 @@ export function useBaseEditorDesigner () {
     );
 
     const analyse = useCallback(() => {
-        designGuidesAroundMutation(DNASequence, 15, desiredEditObject, editor);
-    }, [editor, DNASequence, mutationPos, desiredEdit]);
+        const guides: Guide [] = designGuidesAroundMutation(DNASequence, mutationPos, desiredEditObject, editor);
+        setGuides(guides);
+
+        console.log("Guides from useBaseEditorDesigner");
+        console.log(guides);
+
+    }, [editor, DNASequence, mutationPos, desiredEditObject]);
 
     const onSeqvizHighlight = useCallback(() => {
-
-    }, []);
+      console.log(guides);
+    }, [guides]);
 
     return {
         DNASequence,
@@ -47,7 +53,8 @@ export function useBaseEditorDesigner () {
         setMutationPos,
         targetStrand,
         setTargetStrand,
+        guides,
         // setSeqvizHighlight,
-        // onSeqvizHighlight,
+        onSeqvizHighlight,
     }
 }

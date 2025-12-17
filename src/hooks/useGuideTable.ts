@@ -1,0 +1,39 @@
+import type { Guide } from '../logic/guides.ts';
+import { useMemo, useState } from 'react';
+import type { EditorConfig } from '../logic/editorTypes.ts';
+import { ALL_EDITORS } from '../logic/editorConfigs.ts';
+
+export function useGuideTable(guides: Guide[]) {
+  const [sortBy, setSortBy] = useState<"score" | "bystanders" | "hitsDesiredSite">("bystanders");
+  const [selectedGuideSeq, setSelectedGuideSeq] = useState<string | null>(null);
+
+  const sortedGuides: Guide[] = useMemo((): Guide[] => {
+    if (sortBy === "score") {
+      // TODO rewrite
+      return guides;
+    }
+
+    if (sortBy === "bystanders") {
+      return [...guides].sort((a, b) => (a.summary?.numBystanders ?? 0) - (b.summary?.numBystanders ?? 0));
+    }
+
+    if (sortBy === "hitsDesiredSite") {
+      //
+    }
+  }, [guides, sortBy]);
+
+  const selectedGuide: Guide | null = selectedGuideSeq !== null
+    ? sortedGuides.find((g) => g.seq === selectedGuideSeq) : null;
+
+
+
+  console.log('selectedGuide', selectedGuide);
+
+  return {
+    sortBy,
+    setSortBy,
+    sortedGuides,
+    selectedGuide,
+    setSelectedGuide: setSelectedGuideSeq,
+  };
+}
