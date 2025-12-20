@@ -262,42 +262,6 @@ function findEditablePositionsInWindow(
     return { targets, bystanders };
 }
 
-// function applyEdit(
-//     seq: string,
-//     pos: number,
-//     desiredEdit: EditRequestConfig,
-//     targetStrand: Strand
-// ) {
-//     const bases = seq.split("");
-//     const plusStrandBase = bases[pos];
-//
-//     let newPlusBase: string;
-//
-//     // TODO check if the editor supports this desiredEdit. !!!!!!!
-//     if (targetStrand === "+") {
-//         if (plusStrandBase !== desiredEdit.fromBase) {
-//             return null;
-//         }
-//         newPlusBase = desiredEdit.toBase;
-//     } else {
-//         const fromComp = COMPLEMENT[desiredEdit.fromBase];
-//         if (plusStrandBase !== fromComp) {
-//             return null;
-//         }
-//
-//         const newBottomBase = desiredEdit.toBase;
-//         newPlusBase = COMPLEMENT[newBottomBase];
-//     }
-//
-//     bases[pos] = newPlusBase;
-//
-//     return {
-//       originalBase: plusStrandBase,
-//       newBase: newPlusBase,
-//       editedSeq: bases.join(""),
-//     }
-// }
-
 function simulateGuideEdits(
     seq: string,
     prot: Protospacer,
