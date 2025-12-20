@@ -5,18 +5,21 @@ export interface EditRequestConfig {
     name: string;
     fromBase: "A" | "C";
     toBase: "G" | "T";
+    targetPositions?: number[15];
 }
 
 export const A_TO_G_EDIT_REQUEST: EditRequestConfig = {
     name: 'A_TO_G',
     fromBase: "A",
     toBase: "G",
+  targetPositions: [15],
 }
 
 export const C_TO_T_EDIT_REQUEST: EditRequestConfig = {
     name: 'C_TO_T',
     fromBase: "C",
     toBase: "T",
+  targetPositions: [15],
 }
 
 export const ALL_EDIT_REQUESTS: EditRequestConfig[] = [
@@ -26,12 +29,12 @@ export const ALL_EDIT_REQUESTS: EditRequestConfig[] = [
 
 export function detectMutationTargetStrand(
     seq: string,
-    mutationPos0,
+    absMutationPos,
     desiredEdit: EditRequestConfig,
     editor: EditorConfig
 ) {
     let targetStrand: Strand;
-    let base = seq.charAt(mutationPos0)?.toUpperCase(); // base on + strand
+    let base = seq.charAt(absMutationPos)?.toUpperCase(); // base on + strand
     if (!base) {
         throw new Error("Position out of range");
     }

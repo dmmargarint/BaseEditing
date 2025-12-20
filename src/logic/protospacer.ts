@@ -17,7 +17,7 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
   let editWindowStart: number;
   let editWindowEnd: number;
 
-  let L = editor.guideLength;
+  const L = editor.guideLength;
 
   // 5' - Protospacer - PAM - 3' TOP STRAND
   if (editor.pamOrientation === 'PAM_3prime') {

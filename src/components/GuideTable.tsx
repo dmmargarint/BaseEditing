@@ -38,9 +38,9 @@ export function GuideTable ({guides,sortBy, setSortBy, onSelectGuide}:Props) {
                 </label>
               </td>
               <td>{g.seq}</td>
-              <td>{g.protospacer.pam.strand}</td>
-              <td>{g.summary?.hitsDesiredSite ? "Yes" : "No"}</td>
-              <td>{g.summary?.numBystanders ?? 0}</td>
+              <td>{g.pam.strand}</td>
+              <td>{g.hitsDesiredSite ? "Yes" : "No"}</td>
+              <td>{g.numBystanders ?? 0}</td>
               <td>
                 <button className="btn btn-soft btn-info" onClick={() => onSelectGuide(g.seq)}>
                   More Info
