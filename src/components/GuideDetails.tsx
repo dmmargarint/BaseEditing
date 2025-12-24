@@ -4,7 +4,7 @@ import type { Guide } from '../logic/guides.ts';
 export function GuideDetails({ guide }: {guide: Guide | null}) {
   if (!guide) return <div>Select a guide to see details.</div>;
 
-  const bases = guide.seq.split('');
+  const bases = guide.guideSeq.split('');
 
   // const editPositions = new Map(
   //   guide.editsSimulation.edits.map(e => [
@@ -37,9 +37,9 @@ export function GuideDetails({ guide }: {guide: Guide | null}) {
 
         <div className="space-y-2">
           <h3 className="font-semibold text-sm uppercase opacity-70">Basic Info</h3>
-          <div><b>Original Sequence:</b> <span>{guide.protospacer.sequence}</span></div>
+          <div><b>Original Sequence:</b> <span>{guide.protospacer.seq}</span></div>
           <div><b>Edited Sequence:</b> <span>{guide.postEditSeqOverGuideLength}</span></div>
-          <div><b>Guide Binds to Strand:</b> {guide.guideStrand}</div>
+          <div><b>Guide Binds to Strand:</b> {guide.guideBindingStrand}</div>
         </div>
 
         <div className="divider"></div>
@@ -65,6 +65,6 @@ export function GuideDetails({ guide }: {guide: Guide | null}) {
 }
 
 function renderSequenceWithHighlights(guide: Guide, show: 'original' | 'edited') {
-  const bases = guide.seq.split("");
+  const bases = guide.guideSeq.split("");
   console.log(bases);
 }

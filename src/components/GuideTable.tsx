@@ -31,18 +31,18 @@ export function GuideTable ({guides,sortBy, setSortBy, onSelectGuide}:Props) {
           </thead>
           <tbody>
           {guides.map((g:Guide) => (
-            <tr key={g.seq}>
+            <tr key={g.guideSeq}>
               <td>
                 <label>
                   <input type="checkbox" className="checkbox" />
                 </label>
               </td>
-              <td>{g.seq}</td>
+              <td>{g.guideSeq}</td>
               <td>{g.pam.strand}</td>
               <td>{g.hitsDesiredSite ? "Yes" : "No"}</td>
               <td>{g.numBystanders ?? 0}</td>
               <td>
-                <button className="btn btn-soft btn-info" onClick={() => onSelectGuide(g.seq)}>
+                <button className="btn btn-soft btn-info" onClick={() => onSelectGuide(g.guideSeq)}>
                   More Info
                 </button>
               </td>

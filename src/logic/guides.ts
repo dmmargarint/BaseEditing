@@ -1,14 +1,15 @@
 import type {EditorConfig, PAMSite, Strand} from "./editorTypes.ts";
 import {findPAMsForEditor} from "./pamScanner.ts";
-import {COMPLEMENT, findReverseComplement} from "./sequenceUtils.ts";
+import {COMPLEMENT, getReverseComplement} from "./sequenceUtils.ts";
 import {extractProtospacerFromPam, type Protospacer} from "./protospacer.ts";
 import {detectMutationTargetStrand, type EditRequestConfig} from "./mutation.ts";
 
 // TODO refactor these types
 
 export type Guide = {
-  guideStrand: Strand,
-  seq: string,
+  guideBindingStrand: Strand,
+  genomicSeq: string, // protospacer sequence
+  guideSeq: string, //What the guide sees
   length: number,
   start: number,
   end: number,
@@ -17,11 +18,10 @@ export type Guide = {
   editor: EditorConfig,
   editWindowStart: number,
   editWindowEnd: number,
+  isReverseComplement: boolean,
   targetEdits: EditablePosition[],
   bystanderEdits: EditablePosition[],
-  // editsSimulation: GuideEditSimulation,
   allEdits: EditablePosition[]
-  // summary: GuideEditSummary
   hitsDesiredSite: boolean,
   numBystanders: number,
   score: number,
@@ -123,15 +123,23 @@ export function designGuidesAroundMutation(
       // TODO for now
       const score = 100;
 
-      let postEditSeq: string [] = seq.split("");
+      const postEditSeq: string [] = seq.split("");
       allEdits.map((edit:EditablePosition) => {
         postEditSeq[edit.genomicPos] = edit.editedBase;
       });
-      const postEditSeqOverGuideLength: string = postEditSeq.slice(protospacer.start, protospacer.end);
+      const postEditSeqOverGuideLength: string = postEditSeq.slice(protospacer.start, protospacer.end).join("");
+
+      const guideSeq: string = protospacer.pam.strand === "+"
+        ? protospacer.seq
+        : getReverseComplement(protospacer.seq);
+
+      const isReverseComplement: boolean = protospacer.pam.strand === "-";
 
       guides.push({
-        seq: findReverseComplement(protospacer.sequence) ?? "",
-        guideStrand,
+        guideSeq: guideSeq,
+        genomicSeq: protospacer.seq,
+        guideBindingStrand: guideStrand,
+        isReverseComplement,
         length: protospacer.length,
         protospacer: protospacer,
         start: protospacer.start,
@@ -159,19 +167,7 @@ export function designGuidesAroundMutation(
        * Bottom Strand:  3' |Pam Start|N20|N19...|N1| 5'
        * Therefore editing window has to either add or subtract the limit values
        */
-
-        // guides.push({
-        //   seq: findReverseComplement(protospacer.sequence) ?? "",
-        //   guideStrand: editedStrand === "+" ? "-" : "+",  // inverse of edited strand
-        //   length: protospacer.length,
-        //   protospacer: protospacer,
-        //   editsSimulation: editsSim,
-        //   summary: guideSummary,
-        // });
     }
-
-    console.log("Guides:");
-    console.log(guides);
 
     console.log("Protospacers:");
     console.log(protospacers);
@@ -181,16 +177,6 @@ export function designGuidesAroundMutation(
 
     console.log("Guides:");
     console.log(guides);
-
-    // guides.map((guide: Guide) => {
-    //     simulateGuideEdits(seq, guide, editRequest, targetStrand.targetStrand);
-    // });
-
-    // TODO apply edits
-
-    // 5. Identify editable bases using editor.activityWindows
-    // 6. Identify bystanders based on editor.targetBase
-    // 7. Score guides, return sorted list
 
     return guides;
 }
@@ -233,12 +219,6 @@ function findEditablePositionsInWindow(
             if (guideBase !== COMPLEMENT[desiredEdit.fromBase])
               continue;
           }
-
-
-          // TODO test
-          // const genomicPosition = protospacer.pam.strand === "+"
-          //   ? protospacer.start + genomicPos
-          //   : protospacer.end - genomicPos - 1;
 
           const isTarget = desiredEdit.targetPositions?.includes(genomicPos) ?? false;
 

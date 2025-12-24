@@ -1,7 +1,11 @@
 import type { EditorConfig, PAMSite, Strand } from './editorTypes.ts';
 
+
+/**
+ * Start, end, editWindowStart/End are all absolute genomic positions
+ */
 export type Protospacer = {
-  sequence: string;      //  5'->3' as it binds the target strand
+  seq: string;           //  5'->3' as it binds the target strand
   start: number;         // 0-based index on user DNA
   end: number;           // exclusive, TODO verify
   editWindowStart: number,
@@ -22,10 +26,10 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
   // 5' - Protospacer - PAM - 3' TOP STRAND
   if (editor.pamOrientation === 'PAM_3prime') {
     if (pam.strand === '+') {
-      protospacerStart = pam.startPos - L;
-      protospacerEnd = pam.startPos;
-      editWindowStart = protospacerStart + editor.activityWindows.from;
-      editWindowEnd = protospacerStart + editor.activityWindows.to;
+      protospacerStart = pam.startPos - L; // abs genomic position
+      protospacerEnd = pam.startPos; // abs genomic position
+      editWindowStart = protospacerStart + editor.activityWindows.from; // abs gen. pos
+      editWindowEnd = protospacerStart + editor.activityWindows.to; // abs gen. pos
 
       if (editWindowStart < 0 || editWindowEnd > sequence.length) {
         return null; // Invalid protospacer
@@ -78,7 +82,7 @@ export function extractProtospacerFromPam(sequence: string, pam: PAMSite, editor
   }
 
   return {
-    sequence: slicePlusStrand,
+    seq: slicePlusStrand,
     start: protospacerStart,
     end: protospacerEnd,
     editWindowStart: editWindowStart,

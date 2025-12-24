@@ -14,7 +14,7 @@ export function useGuideTable(guides: Guide[]) {
     }
 
     if (sortBy === "bystanders") {
-      return [...guides].sort((a, b) => (a.summary?.numBystanders ?? 0) - (b.summary?.numBystanders ?? 0));
+      return [...guides].sort((a, b) => (a.numBystanders ?? 0) - (b.numBystanders ?? 0));
     }
 
     if (sortBy === "hitsDesiredSite") {
@@ -23,7 +23,7 @@ export function useGuideTable(guides: Guide[]) {
   }, [guides, sortBy]);
 
   const selectedGuide: Guide | null = selectedGuideSeq !== null
-    ? sortedGuides.find((g) => g.seq === selectedGuideSeq) : null;
+    ? sortedGuides.find((g) => g.guideSeq === selectedGuideSeq) : null;
 
 
 
