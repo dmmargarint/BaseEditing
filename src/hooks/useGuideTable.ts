@@ -7,25 +7,27 @@ export function useGuideTable(guides: Guide[]) {
   const [sortBy, setSortBy] = useState<"score" | "bystanders" | "hitsDesiredSite">("bystanders");
   const [selectedGuideSeq, setSelectedGuideSeq] = useState<string | null>(null);
 
-  const sortedGuides: Guide[] = useMemo((): Guide[] => {
-    if (sortBy === "score") {
-      // TODO rewrite
-      return guides;
-    }
+  // const sortedGuides: Guide[] = useMemo((): Guide[] => {
+  //   if (sortBy === "score") {
+  //     // TODO rewrite
+  //     return guides;
+  //   }
+  //
+  //   if (sortBy === "bystanders") {
+  //     return [...guides].sort((a, b) => (a.numBystanders ?? 0) - (b.numBystanders ?? 0));
+  //   }
+  //
+  //   if (sortBy === "hitsDesiredSite") {
+  //     //
+  //   }
+  // }, [guides, sortBy]);
 
-    if (sortBy === "bystanders") {
-      return [...guides].sort((a, b) => (a.numBystanders ?? 0) - (b.numBystanders ?? 0));
-    }
-
-    if (sortBy === "hitsDesiredSite") {
-      //
-    }
-  }, [guides, sortBy]);
-
+  // const selectedGuide: Guide | null = selectedGuideSeq !== null
+  //   ? sortedGuides.find((g) => g.guideSeq === selectedGuideSeq) : null;
+  //
+  const sortedGuides = guides;
   const selectedGuide: Guide | null = selectedGuideSeq !== null
-    ? sortedGuides.find((g) => g.guideSeq === selectedGuideSeq) : null;
-
-
+    ? guides.find((g) => g.guideSeq === selectedGuideSeq) : null;
 
   console.log('selectedGuide', selectedGuide);
 

@@ -8,7 +8,7 @@ export const ABE8e_SpCas9: EditorConfig = {
     nuclease: "SpCas9",
     pamPatterns: ["NGG"],
     guideLength: 20,
-    activityWindows: { from: 4, to: 8 },
+    activityWindows: { from: 4, to: 8 }, // 1 based
     pamOrientation: "PAM_3prime",
     notes: "High-efficiency ABE with narrow editing window."
 }

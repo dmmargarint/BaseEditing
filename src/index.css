@@ -1,2 +1,15 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+
+.base {
+    margin-left: 5px;
+}
+
+.target {
+    background: lightgreen;
+}
+
+.in-window {
+    text-decoration: black underline;
+}

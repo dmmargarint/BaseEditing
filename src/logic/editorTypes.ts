@@ -42,10 +42,10 @@ export interface EditorConfig {
 }
 
 export interface PAMSite {
-    /** PAM Start Position */
+    /** PAM Genomic Start Position */
     startPos: number;
 
-    /** PAM End Position */
+    /** PAM Genomic End Position */
     endPos: number;
 
     /** The strand PAM is located on, + or - */

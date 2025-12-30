@@ -10,7 +10,7 @@ export function GuidesView ({ guides }: { guides: Guide[] }) {
     setSortBy,
     sortedGuides,
     selectedGuide,
-    setSelectedGuide, // Pass sequence directly
+    setSelectedGuide,
   } = useGuideTable(guides);
 
   return (
@@ -25,7 +25,7 @@ export function GuidesView ({ guides }: { guides: Guide[] }) {
           />
         </div>
         <div style={{ width: 420 }}>
-          <GuideDetails guide={selectedGuide} />
+          <GuideDetails key={selectedGuide?.guideSeq} guide={selectedGuide} />
         </div>
       </div>
     </>

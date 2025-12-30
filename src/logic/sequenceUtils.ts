@@ -53,14 +53,24 @@ export function reverseComplementIupac(pam: string): string {
         .join("");
 }
 
-export function getReverseComplement(dnaSeq: string): string {
-    // if (dnaSeq.length === 0) {
+export function getComplement(seq: string): string {
+  let compl: string = "";
+
+  for (let i = 0; i < seq.length; i++) {
+    compl += COMPLEMENT[seq[i]];
+  }
+
+  return compl;
+}
+
+export function getReverseComplement(seq: string): string {
+    // if (seq.length === 0) {
     //     return null;
     // }
 
     let revcomp = "";
-    for (let i = dnaSeq.length - 1; i >= 0; i--) {
-        revcomp += COMPLEMENT[dnaSeq.charAt(i)];
+    for (let i = seq.length - 1; i >= 0; i--) {
+        revcomp += COMPLEMENT[seq.charAt(i)];
     }
 
     return revcomp;

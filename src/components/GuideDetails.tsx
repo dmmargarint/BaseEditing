@@ -1,70 +1,74 @@
 import type { Guide } from '../logic/guides.ts';
+import { useState } from 'react';
 
 
 export function GuideDetails({ guide }: {guide: Guide | null}) {
   if (!guide) return <div>Select a guide to see details.</div>;
+  const [showTargetStrand, setShowTargetStrand] = useState(false);
 
-  const bases = guide.guideSeq.split('');
+  console.log('GuideDetails render, guide id:', guide?.guideSeq);
 
-  // const editPositions = new Map(
-  //   guide.editsSimulation.edits.map(e => [
-  //     e.positionInProtospacer,
-  //     {type: "target", ...e}
-  //   ])
-  // );
+  const targetGenomicPos = new Set(guide.targetEdits.map(e => e.genomicPos));
+  const bystanderGenomicPos = new Set(guide.bystanderEdits.map(e => e.genomicPos));
+  const editGenomicPos = new Set(guide.allEdits.map(e => e.genomicPos));
+  const editingWindowGenomicPos = new Set(guide.editingWindowGenomic);
+  const pamIndices = new Set();
+  for (let i = guide.pam.startPos; i < guide.pam.endPos; i++) {
+    pamIndices.add(i);
+  }
+
+  const startOffset = guide.genomicRange.start;
+
+  // const originalBases = guide.genomicSeq.split('');
+  const originalBases = guide.genomicSeqPlusStrand.split('')
+  const editedBases = guide.postEditSeqOverGuideLengthPlusStrand.split('');
+
+  const L: number = originalBases.length;
+
+  /**
+   * TODO fix the editable window/target/bystander positions for 3' PAM on - strand
+   */
 
 
+  const renderBases = (bases: string[]) => {
+    return bases.map((base, i) => {
+      const absPos = startOffset + i;
 
-  // {renderSequenceWithHighlights(guide.original, guide.editPositions, 'original')}
+      const isInWindow = editingWindowGenomicPos.has(absPos);
+      const isTarget = targetGenomicPos.has(absPos);
+      const isBystander = bystanderGenomicPos.has(absPos);
+      const isEdited = editGenomicPos.has(absPos);
+      const isPam = pamIndices.has(absPos);
 
+      let displayBase = base;
 
+      const className = [
+        'base',
+        isInWindow && 'in-window',
+        isTarget && 'target',
+        isBystander && 'bystander',
+        isEdited && 'edited',
+        isPam && 'pam-highlight',
+      ].filter(Boolean).join(' ');
+
+      return (
+        <span key={absPos} className={className} title={`Genomic Pos: ${absPos}`}>
+          {isEdited ? <b>{displayBase}</b> : displayBase}
+        </span>
+      );
+    });
+  }
 
   return (
-    // <div>
-    //   <h3>Guide details</h3>
-    //   <div><b>Sequence:</b> {guide.seq}</div>
-    //   <div><b>Strand:</b> {guide.guideStrand}</div>
-    //   <div><b>Window:</b> {guide.protospacer.editWindowStart}–{guide.protospacer.editWindowEnd}</div>
-    //   <div><b>Bystanders:</b> {guide.summary?.numBystanders ?? 0}</div>
-    //   {/* show simulation.edits, etc */}
-    // </div>
-
-    <div className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h3 className="card-title">Guide Details</h3>
-        {/*<div><b>Sequence:</b> {guide.seq}</div>*/}
-        {/*<div><b>Strand:</b> {guide.guideStrand}</div>*/}
-
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm uppercase opacity-70">Basic Info</h3>
-          <div><b>Original Sequence:</b> <span>{guide.protospacer.seq}</span></div>
-          <div><b>Edited Sequence:</b> <span>{guide.postEditSeqOverGuideLength}</span></div>
-          <div><b>Guide Binds to Strand:</b> {guide.guideBindingStrand}</div>
-        </div>
-
-        <div className="divider"></div>
-
-        {/* Edit Window Section */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm uppercase opacity-70">Edit Window</h3>
-          <div><b>Editing Window:</b> {guide.editWindowStart}–{guide.editWindowEnd}</div>
-        </div>
-
-        <div className="divider"></div>
-
-        {/* Summary Section */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm uppercase opacity-70">Summary</h3>
-          <div><b>Bystanders:</b> {guide.numBystanders ?? 0}</div>
-          <div><b>Hits Target:</b> {guide.hitsDesiredSite ? "Yes" : "No"}</div>
-        </div>
-
+    <div className="guide-display">
+      <div className="sequence-row">
+        <span className="label">Original (Genome +):</span>
+        <div className="bases">{renderBases(originalBases)}</div>
+      </div>
+      <div className="sequence-row">
+        <span className="label">Edited (Genome +):</span>
+        <div className="bases">{renderBases(editedBases)}</div>
       </div>
     </div>
   );
-}
-
-function renderSequenceWithHighlights(guide: Guide, show: 'original' | 'edited') {
-  const bases = guide.guideSeq.split("");
-  console.log(bases);
 }

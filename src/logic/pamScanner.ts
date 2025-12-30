@@ -45,8 +45,6 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
                 endPos: rcMatchEnd,     // exclusive
                 pattern: pam,
                 pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd), // CCN etc. as seen on + strand
-
-
             });
 
             if (minusRegex.lastIndex === match.index) {

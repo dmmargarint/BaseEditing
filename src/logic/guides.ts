@@ -1,287 +1,284 @@
-import type {EditorConfig, PAMSite, Strand} from "./editorTypes.ts";
-import {findPAMsForEditor} from "./pamScanner.ts";
-import {COMPLEMENT, getReverseComplement} from "./sequenceUtils.ts";
-import {extractProtospacerFromPam, type Protospacer} from "./protospacer.ts";
-import {detectMutationTargetStrand, type EditRequestConfig} from "./mutation.ts";
+import type { EditorConfig, PAMSite, Strand } from './editorTypes.ts';
+import { findPAMsForEditor } from './pamScanner.ts';
+import { COMPLEMENT, getComplement, getReverseComplement } from './sequenceUtils.ts';
+import { extractProtospacerFromPam, type Protospacer } from './protospacer.ts';
+import { detectMutationTargetStrand, type EditRequestConfig } from './mutation.ts';
 
 // TODO refactor these types
 
 export type Guide = {
-  guideBindingStrand: Strand,
-  genomicSeq: string, // protospacer sequence
-  guideSeq: string, //What the guide sees
-  length: number,
-  start: number,
-  end: number,
+  genomicSeqPlusStrand: string, // Plus strand slice over the guide length
+  guideSeq: string,
+  indexMap: number [], // indexMap[guideIndex] = genomicIndex
+  genomicRange: {start: number; end: number}, // [start, end)
+  editingWindowGenomic: number[],
+  // length: number,
+  // startPos: number,
+  // endPos: number,
+  // targetStrand: string,
   pam: PAMSite,
-  protospacer: Protospacer,
+  // protospacer: Protospacer,
   editor: EditorConfig,
-  editWindowStart: number,
-  editWindowEnd: number,
-  isReverseComplement: boolean,
+  // editWindowStart: number,
+  // editWindowEnd: number,
   targetEdits: EditablePosition[],
   bystanderEdits: EditablePosition[],
   allEdits: EditablePosition[]
   hitsDesiredSite: boolean,
   numBystanders: number,
   score: number,
-  desiredEdit: EditRequestConfig,
-  postEditSeq: string,
-  postEditSeqOverGuideLength: string,
+  editRequest: EditRequestConfig,
+  postEditSeqPlusStrand: string,
+  postEditSeqOverGuideLengthPlusStrand: string,
 }
 
 export type EditablePosition = {
   genomicPos: number;             // absolute genomic position i.e. position in original user input sequence
-  positionInWindow: number;       // 0-based position within editing window
-  positionInProtospacer: number; // e.g.  0-19 position in the protospacer
+  // positionInWindow: number;       // 0-based position within editing window
+  positionInProtospacer: number;  // e.g.  0-19 position in the protospacer
   base: string;
   editedBase: string;
   isTarget: boolean;
   isBystander: boolean;
-  strand: Strand;
+  // strand: Strand;
 };
 
-export type SimulatedEdit = {
-  pos: EditablePosition;
-  originalBase: string;
-  newBase: string;
-}
-
-export type GuideEditSimulation = {
-  finalSeq: string;           // plus-strand after all edits for THIS guide
-  finalSeqOverGuideLength: string; // plus-strand after all edits, covering only the guide length
-  edits: SimulatedEdit[];     // includes main + bystanders
-}
-
-export type GuideSummary =  {
-  hitsDesiredSite: boolean;
-  // TODO rewrite, simulatedEdit should not be the type
-  desiredEdit?: SimulatedEdit;      // if hitsDesiredSite === true
-  bystanders: SimulatedEdit[];      // all edits except the main site
-  numBystanders: number;
-  score: number;                    // higher = better (e.g. hit - penalty * bystanders)
-}
-
-// TODO create type mutation, nr for now
+// TODO create type mutation, its a number for now
 export function designGuidesAroundMutation(
-    seq: string,
-    absMutationPos: number,
-    editRequest: EditRequestConfig,
-    editor: EditorConfig
+  seq: string,
+  absMutationPos: number,
+  editRequest: EditRequestConfig,
+  editor: EditorConfig
 ): Guide[] {
 
-    const guides: Guide[] = [];
+  const guides: Guide[] = [];
 
-    // Scan for PAMs using editor.pamPatterns
-    const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
-    console.log("PAMs:");
-    console.log(PAMs);
+  // Scan for PAMs using editor.pamPatterns
+  const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
+  console.log('PAMs:');
+  console.log(PAMs);
 
-    // let targetStrand: Strand = detectMutationTargetStrand(seq, mutationPos0, editRequest, editor);
-    // console.log(targetStrand);
+  // let targetStrand: Strand = detectMutationTargetStrand(seq, mutationPos0, editRequest, editor);
+  // console.log(targetStrand);
 
+  const protospacers: Protospacer[] = [];
 
-    const protospacers: Protospacer[] = [];
+  for (const pam of PAMs) {
+    // Extract protospacers of editor.guideLength
+    // const protospacer = extractProtospacerFromPam(seq, pam, editor);
+    //
+    // if (protospacer === null) {
+    //   continue;
+    // }
+    //
+    // if (!isPositionInEditingWindow(absMutationPos, protospacer)) {
+    //   continue;
+    // }
+    // protospacers.push(protospacer);
 
-    for (const pam of PAMs) {
-      // Extract protospacers of editor.guideLength
-        const protospacer = extractProtospacerFromPam(seq, pam, editor);
+    const L: number = editor.guideLength;
+    const is3Prime: boolean = editor.pamOrientation === "PAM_3prime";
 
-        if (protospacer === null) {
-          continue;
-        }
+    let protospacerStartGen: number;
+    let protospacerEndGen: number;
 
-      if (!isPositionInEditingWindow(absMutationPos, protospacer)) {
-        continue;
-      }
-      protospacers.push(protospacer);
+    if (is3Prime) {
+      protospacerStartGen = pam.strand === "+" ? pam.startPos - L : pam.endPos;
+    } else {
+      protospacerStartGen = pam.strand === "+" ? pam.endPos : pam.startPos - L;
+    }
+    protospacerEndGen = protospacerStartGen + L;
 
-        const editablePositions: {targets: EditablePosition[], bystanders: EditablePosition[]}
-          = findEditablePositionsInWindow(seq, protospacer, editRequest);
+    if (protospacerStartGen < 0 || protospacerEndGen > seq.length) continue;
 
-        const targetEdits = editablePositions.targets;
-        const bystanderEdits = editablePositions.bystanders;
-        const allEdits = [...targetEdits, ...bystanderEdits];
+    const genomicSeqPlusStrand: string = seq.substring(protospacerStartGen, protospacerEndGen)
+    const guideSeq: string = pam.strand === "+" ? genomicSeqPlusStrand : getReverseComplement(genomicSeqPlusStrand);
 
-        // decide which strand is EDITED for this guide (not the guide strand)
-        // TODO rewrite for different editors
-        const editedStrand: Strand = pam.strand;
-
-        // const editsSim = simulateGuideEdits(seq, protospacer, editablePositions, editRequest, editedStrand);
-
-        // const guideSummary = evaluateGuideEditSimulation(editsSim, absMutationPos);
-
-      const guideStrand: Strand = protospacer.pam.strand === "+"
-        ? "-"
-        : "+";
-
-      // TODO move the summary, scoring, somewhere else
-
-      const desiredEdit = allEdits.find(e => e.genomicPos === absMutationPos) || null;
-      const hitsDesiredSite = !!desiredEdit;
-      const numBystanders = bystanderEdits.length;
-      // TODO for now
-      const score = 100;
-
-      const postEditSeq: string [] = seq.split("");
-      allEdits.map((edit:EditablePosition) => {
-        postEditSeq[edit.genomicPos] = edit.editedBase;
-      });
-      const postEditSeqOverGuideLength: string = postEditSeq.slice(protospacer.start, protospacer.end).join("");
-
-      const guideSeq: string = protospacer.pam.strand === "+"
-        ? protospacer.seq
-        : getReverseComplement(protospacer.seq);
-
-      const isReverseComplement: boolean = protospacer.pam.strand === "-";
-
-      guides.push({
-        guideSeq: guideSeq,
-        genomicSeq: protospacer.seq,
-        guideBindingStrand: guideStrand,
-        isReverseComplement,
-        length: protospacer.length,
-        protospacer: protospacer,
-        start: protospacer.start,
-        end: protospacer.end,
-        pam: protospacer.pam,
-        editor: editor,
-        desiredEdit: desiredEdit,
-        editWindowStart: protospacer.editWindowStart,
-        editWindowEnd: protospacer.editWindowEnd,
-        targetEdits: targetEdits,
-        bystanderEdits: bystanderEdits,
-        allEdits: allEdits,
-        hitsDesiredSite,
-        numBystanders,
-        score,
-        postEditSeq: postEditSeq.join(""),
-        postEditSeqOverGuideLength,
-      });
-
-      /**
-       * The editing window is always counted from the 5' end
-       *
-       * Example:
-       * Top Strand:     5' |N1|N2|....|N20|PAM       3'
-       * Bottom Strand:  3' |Pam Start|N20|N19...|N1| 5'
-       * Therefore editing window has to either add or subtract the limit values
-       */
+    const indexMap: number[] = [];
+    if (pam.strand === '+') {
+      for (let i = 0; i < L; i++) indexMap.push(protospacerStartGen + i);
+    } else {
+      // For minus strand, Guide index 0 is at the highest genomic coordinate
+      for (let i = 0; i < L; i++) indexMap.push(protospacerEndGen - 1 - i);
     }
 
-    console.log("Protospacers:");
-    console.log(protospacers);
+    const editingWindowIndices: number [] = indexMap.slice(
+      editor.activityWindows.from - 1,
+      editor.activityWindows.to
+    );
 
-    // CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG
-    // CCTTGTTTTTTATGTGGGATGCCCCCCCCCTGG
+    const editablePositions: { targets: EditablePosition[], bystanders: EditablePosition[] }
+      = findEditablePositionsInWindow(guideSeq, indexMap, editingWindowIndices, editRequest);
 
-    console.log("Guides:");
-    console.log(guides);
+    const targetEdits = editablePositions.targets;
+    const bystanderEdits = editablePositions.bystanders;
+    const allEdits = [...targetEdits, ...bystanderEdits];
 
-    return guides;
+    const hitsDesiredSite = !! (allEdits.find(e => e.genomicPos === absMutationPos) || null );
+    const numBystanders = bystanderEdits.length;
+    // TODO move the scoring somewhere else
+    const score = 100;
+
+    const postEditSeq: string [] = seq.split('');
+    allEdits.map((edit: EditablePosition) => {
+      postEditSeq[edit.genomicPos] = edit.editedBase;
+    });
+    const postEditSeqPlusStrand: string = postEditSeq.join('');
+
+    const postEditSeqOverGuideLengthPlusStrand: string =
+      postEditSeq.slice(
+        protospacerStartGen,
+        protospacerEndGen
+      ).
+      join('');
+
+    guides.push({
+      guideSeq,
+      genomicSeqPlusStrand,
+      indexMap,
+      editingWindowGenomic: editingWindowIndices,
+      genomicRange: {start: protospacerStartGen, end: protospacerEndGen},
+      pam,
+      editRequest,
+      editor,
+      targetEdits: targetEdits,
+      bystanderEdits: bystanderEdits,
+      allEdits: allEdits,
+      hitsDesiredSite,
+      numBystanders,
+      score,
+      postEditSeqPlusStrand,
+      postEditSeqOverGuideLengthPlusStrand,
+    });
+
+    /**
+     * TODO put this comment somewhere else
+     * The editing window is always counted from the 5' end
+     *
+     * Example:
+     * Top Strand:     5' |N1|N2|....|N20|PAM       3'
+     * Bottom Strand:  3' |Pam Start|N20|N19...|N1| 5'
+     * Therefore the editing window has to either add or subtract the limit values
+     */
+  }
+
+  console.log('Protospacers:');
+  console.log(protospacers);
+
+  // CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG
+  // CCTTGTTTTTTATGTGGGATGCCCCCCCCCTGG
+
+  console.log('Guides:');
+  console.log(guides);
+
+  return guides;
 }
 
 function findEditablePositionsInWindow(
-    seq: string,
-    protospacer: Protospacer,
-    desiredEdit: EditRequestConfig
-): {targets: EditablePosition [], bystanders: EditablePosition[]} {
+  guideSeq: string,
+  indexMap: number[],
+  windowIndices: number[],
+  editRequest
+  : EditRequestConfig
+): { targets: EditablePosition [], bystanders: EditablePosition[] } {
 
-    const targets: EditablePosition[] = [];
-    const bystanders: EditablePosition[] = [];
-    const bases = seq.split("");
+  const targets: EditablePosition[] = [];
+  const bystanders: EditablePosition[] = [];
 
-    const targetStrand = protospacer.pam.strand;
 
-    const windowStart: number = protospacer.editWindowStart;
-    const windowEnd: number = protospacer.editWindowEnd;
+  for (const genomicPos of windowIndices) {
+    const guideIdx = indexMap.indexOf(genomicPos);
 
-    for (let genomicPos = windowStart; genomicPos < windowEnd; genomicPos++) {
-        const base = bases[genomicPos];
+    const baseInGuide = guideSeq[guideIdx];
 
-        const positionInWindow: number = genomicPos - windowStart;
+    if (baseInGuide !== editRequest.fromBase) continue;
 
-        const positionInProtospacer: number = targetStrand === "+"
-        ? genomicPos - protospacer.start
-        : protospacer.end - genomicPos - 1;
+    const isTarget = editRequest.targetPositions?.includes(genomicPos) ?? false;
 
-          // what the guide sees
-          let guideBase: string;
+    const position: EditablePosition = {
+      genomicPos: genomicPos,
+      positionInProtospacer: guideIdx,
+      base: baseInGuide,
+      editedBase: editRequest.toBase,
+      isTarget: isTarget,
+      isBystander: !isTarget,
+    };
 
-          if (targetStrand === "+") {
-            // the guide binds to the opposite strand (-) and sees the {base} on top
-            guideBase = base;
-            if (guideBase !== desiredEdit.fromBase) {
-                continue;
-            }
-          } else {
-            guideBase = COMPLEMENT[base];  // Guide sees complement
-            if (guideBase !== COMPLEMENT[desiredEdit.fromBase])
-              continue;
-          }
-
-          const isTarget = desiredEdit.targetPositions?.includes(genomicPos) ?? false;
-
-          const position: EditablePosition = {
-            genomicPos: genomicPos,
-            positionInWindow,
-            positionInProtospacer,
-            base: base,
-            editedBase: desiredEdit.toBase,
-            isTarget: isTarget,
-            isBystander: !isTarget,
-            strand: targetStrand,
-          };
-
-          if (isTarget) {
-            targets.push(position);
-          } else {
-            bystanders.push(position);
-          }
+    if (isTarget) {
+      targets.push(position);
+    } else {
+      bystanders.push(position);
     }
-    return { targets, bystanders };
-}
+  }
 
-function simulateGuideEdits(
-    seq: string,
-    prot: Protospacer,
-    editableBasesInWindow: EditablePosition [],
-    desiredEdit: EditRequestConfig,
-    targetStrand: Strand
-): GuideEditSimulation {
-    let workingSeq = seq;
-    const edits: SimulatedEdit[] = [];
-    const bases = seq.split("");
+  return { targets, bystanders };
 
-    let arr = Array(bases.length).fill('-');
 
-    for (const base of editableBasesInWindow) {
-        const res = applyEdit(workingSeq, base.absPosition, desiredEdit, targetStrand);
-        if (!res) continue;
 
-        workingSeq = res.editedSeq;
-
-        // TODO look at what the type has to be and update pos
-        edits.push({
-          pos: res,
-          originalBase: res.originalBase,
-          newBase: res.newBase,
-        });
-    }
-
-  const finalSeqOverGuideLength = workingSeq.slice(prot.start, prot.end);
-  return {
-    finalSeq: workingSeq,
-    finalSeqOverGuideLength,
-  };
+  // // TODO probably incorrect
+  // const bases = seq.split('');
+  // // const bases = protospacer.genomicSeqPlusStrand.split('');
+  //
+  // let targetStrand: Strand;
+  // let nonTargetStrand: Strand;
+  //
+  // if (protospacer.pam.strand === "+") {
+  //   targetStrand = "-";
+  //   nonTargetStrand = "+";
+  // } else {
+  //   targetStrand = "+";
+  //   nonTargetStrand = "-";
+  // }
+  //
+  // const windowStartGenomic: number = protospacer.editWindowStartGenomic;
+  // const windowEndGenomic: number = protospacer.editWindowEndGenomic;
+  //
+  // for (let genomicPos = windowStartGenomic; genomicPos <= windowEndGenomic; genomicPos++) {
+  //   const base: string = bases[genomicPos];
+  //
+  //   const positionInWindow: number = genomicPos - windowStartGenomic;
+  //
+  //   // this seems accurate
+  //   const positionInProtospacer: number = targetStrand === '+'
+  //     ? genomicPos - protospacer.startPos
+  //     : protospacer.endPos - genomicPos - 1;
+  //
+  //   // TODO verify. We only want editable bases on the nonTargetStrand (The strand with the PAM sequence)
+  //   if (nonTargetStrand === '+') {
+  //     if (base !== editRequestConfig.fromBase) continue;
+  //   }
+  //   if (nonTargetStrand === '-') {
+  //     if (COMPLEMENT[base] !== editRequestConfig.fromBase) continue;
+  //   }
+  //
+  //   const isTarget = editRequestConfig.targetPositions?.includes(genomicPos) ?? false;
+  //
+  //   const position: EditablePosition = {
+  //     genomicPos: genomicPos,
+  //     positionInWindow,
+  //     positionInProtospacer,
+  //     base: base,
+  //     editedBase: editRequestConfig.toBase,
+  //     isTarget: isTarget,
+  //     isBystander: !isTarget,
+  //     strand: targetStrand
+  //   };
+  //
+  //   if (isTarget) {
+  //     targets.push(position);
+  //   } else {
+  //     bystanders.push(position);
+  //   }
+  // }
+  // return { targets, bystanders };
 }
 
 function isPositionInEditingWindow(
   position: number,
   protospacer: Protospacer
 ): boolean {
-  const windowStart = protospacer.editWindowStart;
-  const windowEnd = protospacer.editWindowEnd;
+  const windowStart = protospacer.editWindowStartGenomic;
+  const windowEnd = protospacer.editWindowEndGenomic;
 
   return position >= windowStart && position < windowEnd;
 }
