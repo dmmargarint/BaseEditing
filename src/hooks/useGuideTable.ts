@@ -2,10 +2,14 @@ import type { Guide } from '../logic/guides.ts';
 import { useMemo, useState } from 'react';
 import type { EditorConfig } from '../logic/editorTypes.ts';
 import { ALL_EDITORS } from '../logic/editorConfigs.ts';
+import { useGuideSelection } from '../logic/context/GuideContext.tsx';
 
 export function useGuideTable(guides: Guide[]) {
   const [sortBy, setSortBy] = useState<"score" | "bystanders" | "hitsDesiredSite">("bystanders");
-  const [selectedGuideSeq, setSelectedGuideSeq] = useState<string | null>(null);
+
+  // const { selectedGuide } = useGuideSelection();
+
+  // const [selectedGuideSeq, setSelectedGuideSeq] = useState<string | null>(null);
 
   // const sortedGuides: Guide[] = useMemo((): Guide[] => {
   //   if (sortBy === "score") {
@@ -22,12 +26,7 @@ export function useGuideTable(guides: Guide[]) {
   //   }
   // }, [guides, sortBy]);
 
-  // const selectedGuide: Guide | null = selectedGuideSeq !== null
-  //   ? sortedGuides.find((g) => g.guideSeq === selectedGuideSeq) : null;
-  //
   const sortedGuides = guides;
-  const selectedGuide: Guide | null = selectedGuideSeq !== null
-    ? guides.find((g) => g.guideSeq === selectedGuideSeq) : null;
 
   console.log('selectedGuide', selectedGuide);
 
@@ -35,7 +34,7 @@ export function useGuideTable(guides: Guide[]) {
     sortBy,
     setSortBy,
     sortedGuides,
-    selectedGuide,
-    setSelectedGuide: setSelectedGuideSeq,
+    // selectedGuide,
+    // setSelectedGuide: setSelectedGuideSeq,
   };
 }

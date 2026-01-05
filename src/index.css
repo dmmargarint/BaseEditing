@@ -2,14 +2,18 @@
 @plugin "daisyui";
 
 
-.base {
-    margin-left: 5px;
-}
+/*.base {*/
+/*    margin-left: 3px;*/
+/*}*/
 
-.target {
-    background: lightgreen;
-}
+/*.target {*/
+/*    background: lightgreen;*/
+/*}*/
 
-.in-window {
-    text-decoration: black underline;
-}
+/*.in-window {*/
+/*    text-decoration: black underline;*/
+/*}*/
+
+/*.pam-highlight {*/
+/*    background: yellow;*/
+/*}*/

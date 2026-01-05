@@ -6,7 +6,7 @@ interface Props {
   guides: Guide[];
   sortBy: "score" | "bystanders";
   setSortBy: (sort: "score" | "bystanders") => void;
-  onSelectGuide: (seq: string) => void; // Takes the guide sequence, not index
+  onSelectGuide: (guide: Guide) => void; // Takes the guide sequence, not index
 }
 
 export function GuideTable ({guides,sortBy, setSortBy, onSelectGuide}:Props) {
@@ -42,7 +42,7 @@ export function GuideTable ({guides,sortBy, setSortBy, onSelectGuide}:Props) {
               <td>{g.hitsDesiredSite ? "Yes" : "No"}</td>
               <td>{g.numBystanders ?? 0}</td>
               <td>
-                <button className="btn btn-soft btn-info" onClick={() => onSelectGuide(g.guideSeq)}>
+                <button className="btn btn-soft btn-info" onClick={() => onSelectGuide(g)}>
                   More Info
                 </button>
               </td>

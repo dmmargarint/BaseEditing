@@ -45,7 +45,7 @@ function EditorConfigPanel({
       <textarea
         className="textarea block w-full"
         placeholder="Insert DNA Sequence"
-        rows={9}
+        rows={3}
         id="dna_textarea"
         value={textInput}
         onChange={(e) => onSequenceChange(e.target.value)}

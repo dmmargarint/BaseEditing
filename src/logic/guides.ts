@@ -29,7 +29,12 @@ export type Guide = {
   score: number,
   editRequest: EditRequestConfig,
   postEditSeqPlusStrand: string,
-  postEditSeqOverGuideLengthPlusStrand: string,
+  // postEditSeqOverGuideLengthPlusStrand: string,
+  ui: {
+    displayStart: number;
+    uiGenomicSeq: string,
+    uiPostEditGenomicSeq?: string
+  },
 }
 
 export type EditablePosition = {
@@ -125,12 +130,19 @@ export function designGuidesAroundMutation(
     });
     const postEditSeqPlusStrand: string = postEditSeq.join('');
 
-    const postEditSeqOverGuideLengthPlusStrand: string =
-      postEditSeq.slice(
-        protospacerStartGen,
-        protospacerEndGen
-      ).
-      join('');
+    // const postEditSeqOverGuideLengthPlusStrand: string =
+    //   postEditSeq.slice(
+    //     protospacerStartGen,
+    //     protospacerEndGen
+    //   ).
+    //   join('');
+
+    const displayPadding = 10;
+    const displayStart = Math.max(0, protospacerStartGen - displayPadding);
+    const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
+    //
+    const uiGenomicSeq = seq.substring(displayStart, displayEnd);
+    // const uiPostEditGenomicSeq = postEditSeqPlusStrand.substring(displayStart, displayEnd);
 
     guides.push({
       guideSeq,
@@ -148,22 +160,10 @@ export function designGuidesAroundMutation(
       numBystanders,
       score,
       postEditSeqPlusStrand,
-      postEditSeqOverGuideLengthPlusStrand,
+      // postEditSeqOverGuideLengthPlusStrand,
+      ui: {displayStart, uiGenomicSeq}
     });
-
-    /**
-     * TODO put this comment somewhere else
-     * The editing window is always counted from the 5' end
-     *
-     * Example:
-     * Top Strand:     5' |N1|N2|....|N20|PAM       3'
-     * Bottom Strand:  3' |Pam Start|N20|N19...|N1| 5'
-     * Therefore the editing window has to either add or subtract the limit values
-     */
   }
-
-  console.log('Protospacers:');
-  console.log(protospacers);
 
   // CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG
   // CCTTGTTTTTTATGTGGGATGCCCCCCCCCTGG
@@ -212,73 +212,4 @@ function findEditablePositionsInWindow(
   }
 
   return { targets, bystanders };
-
-
-
-  // // TODO probably incorrect
-  // const bases = seq.split('');
-  // // const bases = protospacer.genomicSeqPlusStrand.split('');
-  //
-  // let targetStrand: Strand;
-  // let nonTargetStrand: Strand;
-  //
-  // if (protospacer.pam.strand === "+") {
-  //   targetStrand = "-";
-  //   nonTargetStrand = "+";
-  // } else {
-  //   targetStrand = "+";
-  //   nonTargetStrand = "-";
-  // }
-  //
-  // const windowStartGenomic: number = protospacer.editWindowStartGenomic;
-  // const windowEndGenomic: number = protospacer.editWindowEndGenomic;
-  //
-  // for (let genomicPos = windowStartGenomic; genomicPos <= windowEndGenomic; genomicPos++) {
-  //   const base: string = bases[genomicPos];
-  //
-  //   const positionInWindow: number = genomicPos - windowStartGenomic;
-  //
-  //   // this seems accurate
-  //   const positionInProtospacer: number = targetStrand === '+'
-  //     ? genomicPos - protospacer.startPos
-  //     : protospacer.endPos - genomicPos - 1;
-  //
-  //   // TODO verify. We only want editable bases on the nonTargetStrand (The strand with the PAM sequence)
-  //   if (nonTargetStrand === '+') {
-  //     if (base !== editRequestConfig.fromBase) continue;
-  //   }
-  //   if (nonTargetStrand === '-') {
-  //     if (COMPLEMENT[base] !== editRequestConfig.fromBase) continue;
-  //   }
-  //
-  //   const isTarget = editRequestConfig.targetPositions?.includes(genomicPos) ?? false;
-  //
-  //   const position: EditablePosition = {
-  //     genomicPos: genomicPos,
-  //     positionInWindow,
-  //     positionInProtospacer,
-  //     base: base,
-  //     editedBase: editRequestConfig.toBase,
-  //     isTarget: isTarget,
-  //     isBystander: !isTarget,
-  //     strand: targetStrand
-  //   };
-  //
-  //   if (isTarget) {
-  //     targets.push(position);
-  //   } else {
-  //     bystanders.push(position);
-  //   }
-  // }
-  // return { targets, bystanders };
-}
-
-function isPositionInEditingWindow(
-  position: number,
-  protospacer: Protospacer
-): boolean {
-  const windowStart = protospacer.editWindowStartGenomic;
-  const windowEnd = protospacer.editWindowEndGenomic;
-
-  return position >= windowStart && position < windowEnd;
 }

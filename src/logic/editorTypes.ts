@@ -56,4 +56,6 @@ export interface PAMSite {
 
     /** PAM Sequence as found in the DNA */
     pamSeq: string;
+
+    length: number;
 }

@@ -21,7 +21,8 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
                 startPos: matchStart,
                 endPos: matchEnd,
                 pattern: pam,
-                pamSeq: upperSeq.slice(matchStart, matchEnd)
+                pamSeq: upperSeq.slice(matchStart, matchEnd),
+                length: match.length
             });
 
             if (plusRegex.lastIndex === match.index) {
@@ -45,6 +46,7 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
                 endPos: rcMatchEnd,     // exclusive
                 pattern: pam,
                 pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd), // CCN etc. as seen on + strand
+                length: match.length
             });
 
             if (minusRegex.lastIndex === match.index) {
