@@ -1,9 +1,4 @@
-import EditorConfigPanel from './components/EditorConfigPanel.tsx';
-import SeqViz from 'seqviz';
 import { useBaseEditorDesigner } from './hooks/useBaseEditorDesigner.ts';
-import { GuideTable } from './components/GuideTable.tsx';
-import { GuidesView } from './components/GuidesView.tsx';
-import { GuideDetails } from './components/GuideDetails.tsx';
 import { GuideProvider } from './logic/context/GuideContext.tsx';
 import { Sidebar } from './logic/components/Sidebar.tsx';
 import { Workspace } from './logic/components/Workspace.tsx';
@@ -44,10 +39,13 @@ function App() {
     <>
       <GuideProvider>
         <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
-          {/* LEFT SIDEBAR: Config & Table */}
-          <Sidebar className="w-1/4 border-r bg-white" />
 
           <Workspace className="flex-1" />
+
+          {/* RIGHT SIDEBAR: Config & Table */}
+          <Sidebar className="bg-white" />
+
+
 
           {/*<div className="w-1/2 mx-auto p-8 pb-32">*/}
           {/*  {designer.DNASequence && <h2 className="text-center">Sequence Visualiser</h2>}*/}

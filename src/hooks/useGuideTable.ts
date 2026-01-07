@@ -2,7 +2,7 @@ import type { Guide } from '../logic/guides.ts';
 import { useMemo, useState } from 'react';
 import type { EditorConfig } from '../logic/editorTypes.ts';
 import { ALL_EDITORS } from '../logic/editorConfigs.ts';
-import { useGuideSelection } from '../logic/context/GuideContext.tsx';
+import { useDesigner } from '../logic/context/GuideContext.tsx';
 
 export function useGuideTable(guides: Guide[]) {
   const [sortBy, setSortBy] = useState<"score" | "bystanders" | "hitsDesiredSite">("bystanders");

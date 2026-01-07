@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+td, th {
+    font-size: 12px;
+}
+
 
 /*.base {*/
 /*    margin-left: 3px;*/

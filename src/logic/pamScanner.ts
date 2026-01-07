@@ -22,7 +22,7 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
                 endPos: matchEnd,
                 pattern: pam,
                 pamSeq: upperSeq.slice(matchStart, matchEnd),
-                length: match.length
+                length: match[0].length
             });
 
             if (plusRegex.lastIndex === match.index) {
@@ -42,11 +42,11 @@ export function findPAMsForEditor(seq: string, editor: EditorConfig): PAMSite []
 
             results.push({
                 strand: "-",
-                startPos: rcMatchEnd,   // 5' base of NGG on −, in + coords
+                startPos: rcMatchStart,   // 5' base of NGG on −, in + coords
                 endPos: rcMatchEnd,     // exclusive
                 pattern: pam,
                 pamSeq: upperSeq.slice(rcMatchStart, rcMatchEnd), // CCN etc. as seen on + strand
-                length: match.length
+                length: match[0].length
             });
 
             if (minusRegex.lastIndex === match.index) {

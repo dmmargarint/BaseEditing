@@ -3,9 +3,12 @@ import { GuideTable } from './GuideTable.tsx';
 import { GuideDetails } from './GuideDetails.tsx';
 import { useBaseEditorDesigner } from '../hooks/useBaseEditorDesigner.ts';
 import { useGuideTable } from '../hooks/useGuideTable.ts';
-import { useGuideSelection } from '../logic/context/GuideContext.tsx';
+import { useDesigner } from '../logic/context/GuideContext.tsx';
 
 export function GuidesView ({ guides }: { guides: Guide[] }) {
+
+  console.log('Guides in GuideView:');
+  console.log(guides);
   // const {
   //   sortBy,
   //   setSortBy,
@@ -14,11 +17,11 @@ export function GuidesView ({ guides }: { guides: Guide[] }) {
   //   // setSelectedGuide,
   // } = useGuideTable(guides);
 
-  const { selectedGuide, setSelectedGuide } = useGuideSelection();
+  const { setSelectedGuide } = useDesigner();
 
   return (
     <>
-      <div className="">
+      <div className="flex-1">
           <GuideTable
             guides={guides}
             // sortBy={sortBy}

@@ -12,6 +12,8 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
   const bystanderSet = new Set(guide.bystanderEdits.map(e => e.genomicPos));
   const editGenomicPos = new Set(guide.allEdits.map(e => e.genomicPos));
   const editingWindowSet = new Set(guide.editingWindowGenomic);
+  const indexMap = new Set(guide.indexMap);
+
   const pamIndices = new Set();
   for (let i = guide.pam.startPos; i < guide.pam.endPos; i++) {
     pamIndices.add(i);
@@ -79,7 +81,8 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
       <div className="px-6 py-4 border-b bg-slate-50 flex justify-between items-center">
         <div>
           <h3 className="text-lg font-bold text-slate-800">Guide Visualization</h3>
-          <p className="text-xs text-slate-500 font-mono">Strand: {guide.pam.strand} | PAM: {guide.pam.pamSeq}</p>
+          {/*TODO fix the strand */}
+          <p className="text-xs text-slate-500 font-mono">Guide Strand (incorrect): {guide.pam.strand} | PAM: {guide.pam.pamSeq}</p>
         </div>
         <button
           onClick={() => setShowTargetStrand(!showTargetStrand)}
@@ -98,10 +101,7 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
             const isInWindow = editingWindowSet.has(absPos);
             const isPam = pamIndices.has(absPos);
 
-            // Determine if part of Spacer or PAM
-            // Assuming the extracted slice is [Spacer][PAM]
-            const isSpacer = i < 20;
-            // const isPam = i >= 20 && i < 20 + guide.pam.length;
+            const isSpacer = indexMap.has(absPos);
 
             return (
               <div key={absPos} className="flex flex-col items-center group">
@@ -112,8 +112,8 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
 
                 {/* 2. Target/Bystander Icons */}
                 <div className="h-6 flex items-center justify-center">
-                  {isTarget && <span title="Target" className="text-green-500 text-xs">🎯</span>}
-                  {isBystander && <span title="Bystander" className="text-amber-500 text-xs">⚠️</span>}
+                  {isTarget && <span title="Target" className="text-green-500 text-xs" style={{cursor: 'pointer'}}>🎯</span>}
+                  {isBystander && <span title="Bystander" className="text-amber-500 text-xs" style={{cursor: 'pointer'}}>⚠️</span>}
                 </div>
 
                 {/* 3. The Sequence Base */}
@@ -123,20 +123,15 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
                   ${isTarget ? 'text-green-600' : ''}
                   ${isBystander ? 'text-amber-600' : ''}
                   border-x border-transparent group-hover:border-slate-200 group-hover:bg-slate-50
-                `}>
+                `} style={{cursor: 'pointer'}}>
                   {getChar(base)}
                 </div>
 
                 {/* 4. Feature Brackets (Spacer / PAM) */}
                 <div className="w-2/3 h-1 mt-0.5 flex">
-                  {isSpacer && <div className="w-full h-full bg-blue-400 rounded-full" title="Spacer" />}
-                  {isPam && <div className="w-full h-full bg-purple-500 rounded-full" title="PAM" />}
+                  {isSpacer && <div className="w-full h-full bg-blue-700 rounded-full" title="Spacer" />}
+                  {isPam && <div className="w-full h-full bg-green-600 rounded-full" title="PAM" />}
                 </div>
-
-                {/* 5. Feature Labels (Hidden until hover) */}
-                {/*<span className="mt-2 text-[5px] uppercase font-bold tracking-tighter text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">*/}
-                {/*  {isSpacer ? 'Spacer' : isPam ? 'PAM' : ''}*/}
-                {/*</span>*/}
               </div>
             );
           })}
@@ -145,8 +140,8 @@ export function GuideDetails({ guide}: {guide: Guide | null}) {
 
       {/* Legend */}
       <div className="px-6 py-3 bg-slate-50 border-t flex gap-6 text-xs text-slate-600">
-        <div className="flex items-center gap-2"><div className="w-3 h-1 bg-blue-400 rounded-full" /> Spacer</div>
-        <div className="flex items-center gap-2"><div className="w-3 h-1 bg-purple-500 rounded-full" /> PAM</div>
+        <div className="flex items-center gap-2"><div className="w-3 h-1 bg-blue-700 rounded-full" /> Spacer</div>
+        <div className="flex items-center gap-2"><div className="w-3 h-1 bg-green-600 rounded-full" /> PAM</div>
         <div className="flex items-center gap-2"><div className="w-3 h-3 bg-yellow-50 border border-yellow-200 rounded" /> Editing Window</div>
       </div>
     </div>
