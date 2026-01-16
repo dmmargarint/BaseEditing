@@ -1,8 +1,5 @@
 import type { Guide } from '../logic/guides.ts';
 import { GuideTable } from './GuideTable.tsx';
-import { GuideDetails } from './GuideDetails.tsx';
-import { useBaseEditorDesigner } from '../hooks/useBaseEditorDesigner.ts';
-import { useGuideTable } from '../hooks/useGuideTable.ts';
 import { useDesigner } from '../logic/context/GuideContext.tsx';
 
 export function GuidesView ({ guides }: { guides: Guide[] }) {

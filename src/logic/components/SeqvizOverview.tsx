@@ -1,12 +1,22 @@
 import SeqViz from 'seqviz';
 import { useDesigner } from '../context/GuideContext.tsx';
 
-function onSeqvizHighlight(e) {
-  console.log(e);
-}
-
 export function SeqvizOverview() {
   const {designer, selectedGuide} = useDesigner();
+
+  const onSeqvizHighlight = (e ) => {
+    console.log(e);
+    if (e.length !== 1)
+      return;
+
+    let mutationPos;
+      if (e.clockwise)
+        mutationPos = e.end;
+      else
+        mutationPos = e.start;
+
+    designer.setMutationPos(mutationPos);
+  }
 
   return (
     <>
@@ -25,11 +35,17 @@ export function SeqvizOverview() {
 
       </div>
 
-
       <SeqViz
         // name="DNA Sequence"
         seq={designer.DNASequence}
-        annotations={[{ name: 'mutation', start: 15, end: 16, direction: 1, color: 'red' }]}
+        annotations={designer.mutationPos ? [
+          { name: 'mutation',
+            start: designer.mutationPos - 1,
+            end: designer.mutationPos,
+            direction: 1, color: 'red'
+          }
+        ] : []
+        }
         viewer="linear"
         style={{ width: '100%', height: '100%' }}
         onSelection={(s) => {
@@ -46,12 +62,8 @@ export function SeqvizOverview() {
             end: Math.max(...selectedGuide.editingWindowGenomic) + 1,
             color: 'yellow',
           },
-          // {
-          //   start:
-          // }
         ] : []}
         zoom={{linear: designer.seqvizZoom}}
-        // GTAAT
       />
     </>
   );

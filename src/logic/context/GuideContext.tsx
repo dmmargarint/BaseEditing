@@ -15,9 +15,11 @@ const GuideContext = createContext<GuideContextType | undefined>(undefined);
 export function GuideProvider({ children }: { children: React.ReactNode }) {
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
 
-  const designer = useBaseEditorDesigner()
+  const designer = useBaseEditorDesigner({
+    onAnalyseComplete: () => setSelectedGuide(null)
+  });
 
-  // Memoize the value to prevent unnecessary re-renders of consumers
+  // Memoize the value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     selectedGuide,
     setSelectedGuide,
@@ -29,13 +31,6 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
       {children}
     </GuideContext.Provider>
   );
-
-
-  // return (
-  //   <GuideContext.Provider value={{ selectedGuide, setSelectedGuide }}>
-  //     {children}
-  //   </GuideContext.Provider>
-  // );
 }
 
 export const useDesigner = () => {

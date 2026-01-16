@@ -1,8 +1,7 @@
-import type { EditorConfig, PAMSite, Strand } from './editorTypes.ts';
+import type { EditorConfig, PAMSite } from './editorTypes.ts';
 import { findPAMsForEditor } from './pamScanner.ts';
-import { COMPLEMENT, getComplement, getReverseComplement } from './sequenceUtils.ts';
-import { extractProtospacerFromPam, type Protospacer } from './protospacer.ts';
-import { detectMutationTargetStrand, type EditRequestConfig } from './mutation.ts';
+import { getReverseComplement } from './sequenceUtils.ts';
+import {type EditRequestConfig } from './mutation.ts';
 
 // TODO refactor these types
 
@@ -29,7 +28,6 @@ export type Guide = {
   score: number,
   editRequest: EditRequestConfig,
   postEditSeqPlusStrand: string,
-  // postEditSeqOverGuideLengthPlusStrand: string,
   ui: {
     displayStart: number;
     uiGenomicSeq: string,
@@ -58,41 +56,20 @@ export function designGuidesAroundMutation(
 
   const guides: Guide[] = [];
 
-  // Scan for PAMs using editor.pamPatterns
   const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
-  console.log('PAMs:');
-  console.log(PAMs);
-
-  // let targetStrand: Strand = detectMutationTargetStrand(seq, mutationPos0, editRequest, editor);
-  // console.log(targetStrand);
-
-  const protospacers: Protospacer[] = [];
 
   for (const pam of PAMs) {
-    // Extract protospacers of editor.guideLength
-    // const protospacer = extractProtospacerFromPam(seq, pam, editor);
-    //
-    // if (protospacer === null) {
-    //   continue;
-    // }
-    //
-    // if (!isPositionInEditingWindow(absMutationPos, protospacer)) {
-    //   continue;
-    // }
-    // protospacers.push(protospacer);
-
     const L: number = editor.guideLength;
     const is3Prime: boolean = editor.pamOrientation === "PAM_3prime";
 
     let protospacerStartGen: number;
-    let protospacerEndGen: number;
 
     if (is3Prime) {
       protospacerStartGen = pam.strand === "+" ? pam.startPos - L : pam.endPos;
     } else {
       protospacerStartGen = pam.strand === "+" ? pam.endPos : pam.startPos - L;
     }
-    protospacerEndGen = protospacerStartGen + L;
+    const protospacerEndGen = protospacerStartGen + L;
 
     if (protospacerStartGen < 0 || protospacerEndGen > seq.length) continue;
 
@@ -130,19 +107,11 @@ export function designGuidesAroundMutation(
     });
     const postEditSeqPlusStrand: string = postEditSeq.join('');
 
-    // const postEditSeqOverGuideLengthPlusStrand: string =
-    //   postEditSeq.slice(
-    //     protospacerStartGen,
-    //     protospacerEndGen
-    //   ).
-    //   join('');
-
     const displayPadding = 10;
     const displayStart = Math.max(0, protospacerStartGen - displayPadding);
     const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
-    //
+
     const uiGenomicSeq = seq.substring(displayStart, displayEnd);
-    // const uiPostEditGenomicSeq = postEditSeqPlusStrand.substring(displayStart, displayEnd);
 
     guides.push({
       guideSeq,
@@ -160,16 +129,9 @@ export function designGuidesAroundMutation(
       numBystanders,
       score,
       postEditSeqPlusStrand,
-      // postEditSeqOverGuideLengthPlusStrand,
       ui: {displayStart, uiGenomicSeq}
     });
   }
-
-  // CCTTGTTTTTTATGTAAGATGCCCCCCCCCTGG
-  // CCTTGTTTTTTATGTGGGATGCCCCCCCCCTGG
-
-  console.log('Guides:');
-  console.log(guides);
 
   return guides;
 }
@@ -184,7 +146,6 @@ function findEditablePositionsInWindow(
 
   const targets: EditablePosition[] = [];
   const bystanders: EditablePosition[] = [];
-
 
   for (const genomicPos of windowIndices) {
     const guideIdx = indexMap.indexOf(genomicPos);
