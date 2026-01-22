@@ -17,7 +17,7 @@ function App() {
       <GuideProvider>
         <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
 
-          <Workspace className="flex-1" />
+          <Workspace className="" />
 
           {/* RIGHT SIDEBAR: Config */}
           <Sidebar className="bg-white" />

@@ -64,6 +64,11 @@ export function SeqvizOverview() {
           },
         ] : []}
         zoom={{linear: designer.seqvizZoom}}
+        selection={selectedGuide ? {
+          start: selectedGuide.pam.startPos,
+          end: selectedGuide.pam.endPos,
+          clockwise: true
+        }: undefined}
       />
     </>
   );

@@ -2,6 +2,7 @@ import type { EditorConfig, PAMSite } from './editorTypes.ts';
 import { findPAMsForEditor } from './pamScanner.ts';
 import { getReverseComplement } from './sequenceUtils.ts';
 import {type EditRequestConfig } from './mutation.ts';
+import { ALL_EDITORS } from './editorConfigs.ts';
 
 // TODO refactor these types
 
@@ -51,87 +52,104 @@ export function designGuidesAroundMutation(
   seq: string,
   absMutationPos: number,
   editRequest: EditRequestConfig,
-  editor: EditorConfig
+  editor: EditorConfig | "auto"
 ): Guide[] {
 
   const guides: Guide[] = [];
 
-  const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
+  let editorsToSearch = [];
 
-  for (const pam of PAMs) {
-    const L: number = editor.guideLength;
-    const is3Prime: boolean = editor.pamOrientation === "PAM_3prime";
-
-    let protospacerStartGen: number;
-
-    if (is3Prime) {
-      protospacerStartGen = pam.strand === "+" ? pam.startPos - L : pam.endPos;
-    } else {
-      protospacerStartGen = pam.strand === "+" ? pam.endPos : pam.startPos - L;
-    }
-    const protospacerEndGen = protospacerStartGen + L;
-
-    if (protospacerStartGen < 0 || protospacerEndGen > seq.length) continue;
-
-    const genomicSeqPlusStrand: string = seq.substring(protospacerStartGen, protospacerEndGen)
-    const guideSeq: string = pam.strand === "+" ? genomicSeqPlusStrand : getReverseComplement(genomicSeqPlusStrand);
-
-    const indexMap: number[] = [];
-    if (pam.strand === '+') {
-      for (let i = 0; i < L; i++) indexMap.push(protospacerStartGen + i);
-    } else {
-      // For minus strand, Guide index 0 is at the highest genomic coordinate
-      for (let i = 0; i < L; i++) indexMap.push(protospacerEndGen - 1 - i);
-    }
-
-    const editingWindowIndices: number [] = indexMap.slice(
-      editor.activityWindows.from - 1,
-      editor.activityWindows.to
-    );
-
-    const editablePositions: { targets: EditablePosition[], bystanders: EditablePosition[] }
-      = findEditablePositionsInWindow(guideSeq, indexMap, editingWindowIndices, editRequest);
-
-    const targetEdits = editablePositions.targets;
-    const bystanderEdits = editablePositions.bystanders;
-    const allEdits = [...targetEdits, ...bystanderEdits];
-
-    const hitsDesiredSite = !! (allEdits.find(e => e.genomicPos === absMutationPos) || null );
-    const numBystanders = bystanderEdits.length;
-    // TODO move the scoring somewhere else
-    const score = 100;
-
-    const postEditSeq: string [] = seq.split('');
-    allEdits.map((edit: EditablePosition) => {
-      postEditSeq[edit.genomicPos] = edit.editedBase;
+  if (editor === "auto") {
+    editorsToSearch = ALL_EDITORS.filter((editor: EditorConfig) => {
+      return editor.targetBase === editRequest.fromBase
     });
-    const postEditSeqPlusStrand: string = postEditSeq.join('');
-
-    const displayPadding = 10;
-    const displayStart = Math.max(0, protospacerStartGen - displayPadding);
-    const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
-
-    const uiGenomicSeq = seq.substring(displayStart, displayEnd);
-
-    guides.push({
-      guideSeq,
-      genomicSeqPlusStrand,
-      indexMap,
-      editingWindowGenomic: editingWindowIndices,
-      genomicRange: {start: protospacerStartGen, end: protospacerEndGen},
-      pam,
-      editRequest,
-      editor,
-      targetEdits: targetEdits,
-      bystanderEdits: bystanderEdits,
-      allEdits: allEdits,
-      hitsDesiredSite,
-      numBystanders,
-      score,
-      postEditSeqPlusStrand,
-      ui: {displayStart, uiGenomicSeq}
-    });
+  } else {
+    editorsToSearch.push(editor);
   }
+
+  editorsToSearch.map((editor: EditorConfig) => {
+    const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
+
+    console.log(`PAMs for editor ${editor.name}`);
+    console.log(PAMs);
+
+    for (const pam of PAMs) {
+      const L: number = editor.guideLength;
+      const is3Prime: boolean = editor.pamOrientation === "PAM_3prime";
+
+      let protospacerStartGen: number;
+
+      if (is3Prime) {
+        protospacerStartGen = pam.strand === "+" ? pam.startPos - L : pam.endPos;
+      } else {
+        protospacerStartGen = pam.strand === "+" ? pam.endPos : pam.startPos - L;
+      }
+      const protospacerEndGen = protospacerStartGen + L;
+
+      if (protospacerStartGen < 0 || protospacerEndGen > seq.length) continue;
+
+      const genomicSeqPlusStrand: string = seq.substring(protospacerStartGen, protospacerEndGen)
+      const guideSeq: string = pam.strand === "+" ? genomicSeqPlusStrand : getReverseComplement(genomicSeqPlusStrand);
+
+      const indexMap: number[] = [];
+      if (pam.strand === '+') {
+        for (let i = 0; i < L; i++) indexMap.push(protospacerStartGen + i);
+      } else {
+        // For minus strand, Guide index 0 is at the highest genomic coordinate
+        for (let i = 0; i < L; i++) indexMap.push(protospacerEndGen - 1 - i);
+      }
+
+      const editingWindowIndices: number [] = indexMap.slice(
+        editor.activityWindows.from - 1,
+        editor.activityWindows.to
+      );
+
+      const editablePositions: { targets: EditablePosition[], bystanders: EditablePosition[] }
+        = findEditablePositionsInWindow(guideSeq, indexMap, editingWindowIndices, editRequest);
+
+      const targetEdits = editablePositions.targets;
+      const bystanderEdits = editablePositions.bystanders;
+      const allEdits = [...targetEdits, ...bystanderEdits];
+
+      const hitsDesiredSite = !! (allEdits.find(e => e.genomicPos === absMutationPos) || null );
+      const numBystanders = bystanderEdits.length;
+      // TODO move the scoring somewhere else
+      const score = 100;
+
+      const postEditSeq: string [] = seq.split('');
+      allEdits.map((edit: EditablePosition) => {
+        postEditSeq[edit.genomicPos] = edit.editedBase;
+      });
+      const postEditSeqPlusStrand: string = postEditSeq.join('');
+
+      const displayPadding = 10;
+      const displayStart = Math.max(0, protospacerStartGen - displayPadding);
+      const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
+
+      const uiGenomicSeq = seq.substring(displayStart, displayEnd);
+
+      if (!hitsDesiredSite) continue;
+
+      guides.push({
+        guideSeq,
+        genomicSeqPlusStrand,
+        indexMap,
+        editingWindowGenomic: editingWindowIndices,
+        genomicRange: {start: protospacerStartGen, end: protospacerEndGen},
+        pam,
+        editRequest,
+        editor,
+        targetEdits: targetEdits,
+        bystanderEdits: bystanderEdits,
+        allEdits: allEdits,
+        hitsDesiredSite,
+        numBystanders,
+        score,
+        postEditSeqPlusStrand,
+        ui: {displayStart, uiGenomicSeq}
+      });
+    }
+  });
 
   return guides;
 }

@@ -1,25 +1,16 @@
-import { GuideDetails } from '../../components/GuideDetails.tsx';
 import { useDesigner } from '../context/GuideContext.tsx';
 import { SeqvizOverview } from './SeqvizOverview.tsx';
-import { GuidesView } from '../../components/GuidesView.tsx';
-
 
 export function Workspace({className}: { className: string }) {
-  const { designer, selectedGuide } = useDesigner();
+  const { designer} = useDesigner();
 
   return (
     <>
       <main className={`${className} flex-1 flex flex-col`}>
-        {/* Top half: Global View (SeqViz) */}
-        <section className="h-1/2 bg-white overflow-hidden">
-            {/*{designer.DNASequence && <h2 className="text-center">Sequence Visualiser</h2>}*/}
+        <section className="h-full w-full w-bg-white overflow-hidden">
             {designer.DNASequence && (
               <SeqvizOverview />
             )}
-        </section>
-
-        <section className="h-1/2 overflow-y-auto p-8">
-          <GuidesView guides={designer.guides} />
         </section>
 
         {/*<section className="h-1/2 overflow-y-auto p-8">*/}
