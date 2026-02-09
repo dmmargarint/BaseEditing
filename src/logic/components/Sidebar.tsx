@@ -1,6 +1,6 @@
-import EditorConfigPanel from '../../components/EditorConfigPanel.tsx';
+import EditorConfigPanel from './EditorConfigPanel.tsx';
 import { useDesigner } from '../context/GuideContext.tsx';
-import { GuidesView } from '../../components/GuidesView.tsx';
+import { GuidesView } from './GuidesView.tsx';
 
 export function Sidebar({className}: { className: string }) {
   const {designer} = useDesigner();

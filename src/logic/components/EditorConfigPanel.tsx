@@ -1,4 +1,4 @@
-import { ALL_EDITORS } from '../logic/editorConfigs.ts';
+import { ALL_EDITORS } from '../editorConfigs.ts';
 
 interface Props {
   textInput: string;
@@ -12,8 +12,6 @@ interface Props {
   setMutationPos: (string) => void;
   setTargetStrand: (targetStrand: string) => void;
   onFastaFileUpload: (file: string) => void;
-  // seqvizHighlight: {};
-  // onSeqvizHighlight: {};
 }
 
 function EditorConfigPanel({
@@ -63,8 +61,8 @@ function EditorConfigPanel({
         <fieldset>
 
           <legend className="fieldset-legend text-xs">
-            Base Editor Type
-            <div className="tooltip tooltip-content" onClick={()=>document.getElementById('base_editor_type_info').showModal()} style={{cursor: 'pointer'}}>
+            Base Editor
+            <div className="tooltip tooltip-content" onClick={()=>document.getElementById('base_editor_type_info')?.showModal()} style={{cursor: 'pointer'}}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5"
                  stroke="currentColor" className="size-[1.2em]">
               <path strokeLinecap="round" strokeLinejoin="round"

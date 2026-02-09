@@ -2,6 +2,7 @@ import { GuideProvider } from './logic/context/GuideContext.tsx';
 import { Sidebar } from './logic/components/Sidebar.tsx';
 import { Workspace } from './logic/components/Workspace.tsx';
 import TopNavBar from './logic/components/TopNavBar.tsx';
+import Footer from './logic/components/Footer.tsx';
 
 function App() {
 
@@ -15,7 +16,7 @@ function App() {
     <>
       <TopNavBar />
       <GuideProvider>
-        <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
+        <div className="flex ninety-percent-screen-height w-full bg-slate-50 overflow-hidden">
 
           <Workspace className="" />
 
@@ -24,6 +25,7 @@ function App() {
 
         </div>
       </GuideProvider>
+      <Footer />
     </>
   );
 }

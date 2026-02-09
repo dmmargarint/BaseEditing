@@ -1,4 +1,4 @@
-import type { Guide } from '../logic/guides.ts';
+import type { Guide } from '../guides.ts';
 import { useState } from 'react';
 
 

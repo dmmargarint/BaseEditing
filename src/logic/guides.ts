@@ -7,6 +7,7 @@ import { ALL_EDITORS } from './editorConfigs.ts';
 // TODO refactor these types
 
 export type Guide = {
+  id: string;
   genomicSeqPlusStrand: string, // Plus strand slice over the guide length
   guideSeq: string,
   indexMap: number [], // indexMap[guideIndex] = genomicIndex
@@ -127,10 +128,14 @@ export function designGuidesAroundMutation(
       const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
 
       const uiGenomicSeq = seq.substring(displayStart, displayEnd);
+      const uiPostEditGenomicSeq = postEditSeqPlusStrand.substring(displayStart, displayEnd);
+
+      const id = `${guideSeq}.${editor.name}`;
 
       if (!hitsDesiredSite) continue;
 
       guides.push({
+        id,
         guideSeq,
         genomicSeqPlusStrand,
         indexMap,
@@ -146,7 +151,7 @@ export function designGuidesAroundMutation(
         numBystanders,
         score,
         postEditSeqPlusStrand,
-        ui: {displayStart, uiGenomicSeq}
+        ui: {displayStart, uiGenomicSeq, uiPostEditGenomicSeq},
       });
     }
   });

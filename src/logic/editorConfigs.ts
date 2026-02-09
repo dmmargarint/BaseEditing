@@ -36,6 +36,11 @@ export const BE4max: EditorConfig = {
   pamOrientation: "PAM_3prime",
 }
 
+export const Cas12a: EditorConfig = {
+  name: "Cas12a",
+
+}
+
 export const ALL_EDITORS: EditorConfig[] = [
     ABE8e_SpCas9,
     ABE8e_SaCas9,
