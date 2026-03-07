@@ -1,4 +1,5 @@
 import { ALL_EDITORS } from '../editorConfigs.ts';
+import { ALL_GENOMES } from '../genomeConfigs.ts';
 
 interface Props {
   textInput: string;
@@ -12,6 +13,9 @@ interface Props {
   setMutationPos: (string) => void;
   setTargetStrand: (targetStrand: string) => void;
   onFastaFileUpload: (file: string) => void;
+  genome: string;
+  setGenome: (genome: string) => void;
+  onReset: () => void;
 }
 
 function EditorConfigPanel({
@@ -25,6 +29,9 @@ function EditorConfigPanel({
                              mutationPos,
                              setMutationPos,
                              onFastaFileUpload,
+                             genome,
+                             setGenome,
+                             onReset
                            }: Props
 ) {
 
@@ -39,7 +46,7 @@ function EditorConfigPanel({
       <div className="w-full justify-center">
         <legend className="fieldset-legend text-xs">DNA Sequence</legend>
         <textarea
-          className="textarea textarea-sm block w-full"
+          className="textarea textarea-sm w-full"
           placeholder="Insert DNA Sequence"
           rows={3}
           id="dna_textarea"
@@ -55,11 +62,28 @@ function EditorConfigPanel({
                  accept=".fasta, .fa"
                  onChange={onFastaFileUpload}
           />
-          {/*<label className="label">Max size 2MB</label>*/}
+          <label className="label">Accepted File Formats: .fasta .fa</label>
         </fieldset>
 
         <fieldset>
+          <legend className="fieldset-legend text-xs">
+            Genome
+          </legend>
+          <select
+            className="select input-sm w-full h-8"
+            name="genome"
+            value={genome}
+            onChange={(e) => setGenome(e.target.value)}
+          >
+            {ALL_GENOMES.map((ed, index) => (
+              <option key={index} value={ed.code}>
+                {ed.name}
+              </option>
+            ))}
+          </select>
+        </fieldset>
 
+        <fieldset>
           <legend className="fieldset-legend text-xs">
             Base Editor
             <div className="tooltip tooltip-content" onClick={()=>document.getElementById('base_editor_type_info')?.showModal()} style={{cursor: 'pointer'}}>
@@ -84,7 +108,7 @@ function EditorConfigPanel({
           </dialog>
 
           <select
-            className="select input-sm block w-full"
+            className="select input-sm w-full"
             value={selectedEditorName}
             onChange={(e) => setSelectedEditorName(e.target.value)}
           >
@@ -97,10 +121,9 @@ function EditorConfigPanel({
           </select>
         </fieldset>
 
-
         <legend className="fieldset-legend text-xs">Desired Edit</legend>
         <select
-          className="select input-sm block w-full"
+          className="select input-sm w-full"
           value={desiredEdit}
           onChange={(e) => setDesiredEdit(e.target.value)}
         >
@@ -112,7 +135,7 @@ function EditorConfigPanel({
           <legend className="fieldset-legend text-xs">Mutation Position (or highlight the mutation in the visualiser)
           </legend>
           <input type="text"
-                 className="input input-sm block w-full"
+                 className="input input-sm w-full"
                  value={mutationPos ?? ''}
                  placeholder="Position number or HGVS i.e. c.4375C>T"
                  onChange={(e) => setMutationPos(e.target.value)}
@@ -121,10 +144,19 @@ function EditorConfigPanel({
           <p className="text-sm text-right">Advanced Settings</p>
 
           <button
-            className="btn btn-primary input-sm mt-4 block"
+            className="btn btn-primary input-sm mt-4"
             onClick={onAnalyse}
           >
             Find Guides
+          </button>
+          <button
+            className="btn btn-outline input-sm mt-4 ml-4"
+            onClick={onReset}
+          >
+            Reset
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
           </button>
       </div>
     </>

@@ -1,26 +1,38 @@
-import {useCallback, useMemo, useState} from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type {EditorConfig} from "../logic/editorTypes.ts";
 import {ALL_EDITORS} from "../logic/editorConfigs.ts";
 import { designGuidesAroundMutation, type Guide } from '../logic/guides.ts';
 import {ALL_EDIT_REQUESTS, type EditRequestConfig} from "../logic/mutation.ts";
 import { fasta } from "bioinformatics-parser";
+import { useAnalysis } from '../logic/context/AnalysisContext.tsx';
+import { type GuideContextType, useDesigner } from '../logic/context/GuideContext.tsx';
 
 interface DesignerProps {
   onAnalyseComplete?: () => void; // Optional callback to reset state
 }
 
 export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) {
-    const [DNASequence, setDNASequence] = useState<string>("CCTTGGCGTATATGTAATATGCCGTCTGGGGTCTGTCTCTTGG"); // SpCas9 and SaCas9 test ABE
-    // const [DNASequence, setDNASequence] = useState<string>("CCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCCTTGG");
+    const [DNASequence, setDNASequence] = useState<string>("TACCAGGCGTTCCTGGAGAACATGGAGCGATCAGACCCCCTGGGCTTCAGGGGATCAGAGG"); // SpCas9 and SaCas9 test ABE
+    const [genome, setGenome] = useState<string>("hg38");
+  // const [DNASequence, setDNASequence] = useState<string>("CCTTGTTTTTTATGTAATATGCCCCCCCCCTGGCCCTTGG");
     const [error, setError] = useState<string>("");
     const [selectedEditorName, setSelectedEditorName] = useState<string>("auto");
     // const [selectedEditorName, setSelectedEditorName] = useState<string>("ABE8e (SpCas9)");
     const [desiredEdit, setDesiredEdit] = useState<"A_TO_G" | "C_TO_T">("A_TO_G");
     const [guides, setGuides] = useState<Guide[]>([]);
-    const [mutationPos, setMutationPos] = useState<number>(17);
+    const [mutationPos, setMutationPos] = useState<number>(33);
     const [targetStrand, setTargetStrand] = useState<"+" | "-">("+");
     const [seqvizZoom, setSeqvizZoom] = useState<number>(11);
     const [seqvizSelectEnabled, setSeqvizSelectEnabled] = useState<boolean>(true);
+
+    const { startAnalysis, status, results } = useAnalysis();
+
+    // const {setSelectedGuide} = useDesigner();
+
+    const reset = useCallback(() => {
+      setGuides([]);
+      // setSelectedGuide(null);
+    }, [setGuides]);
 
     const editor: EditorConfig | string = useMemo(
         () => {
@@ -35,7 +47,7 @@ export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) 
         [desiredEdit]
     );
 
-    const analyse = useCallback(() => {
+    const analyse = useCallback(async () => {
         // zero base conversion
         const absMutationPos: number = mutationPos - 1;
         const guides: Guide [] = designGuidesAroundMutation(
@@ -44,17 +56,25 @@ export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) 
           desiredEditObject,
           editor
         );
+
         setGuides(guides);
 
-        console.log("Guides from useBaseEditorDesigner");
-        console.log(guides);
+        if (guides.length > 0) {
+          await startAnalysis(guides);
+        }
 
       if (onAnalyseComplete) {
         onAnalyseComplete();
       }
 
-    }, [editor, DNASequence, mutationPos, desiredEditObject, onAnalyseComplete]);
+    }, [editor, DNASequence, mutationPos, desiredEditObject, onAnalyseComplete, startAnalysis]);
 
+    const enrichedGuides = useMemo(() => {
+      return guides.map((guide: Guide) => ({
+        ...guide,
+        analysis: results?.[guide.guideSeq],
+      }));
+    }, [guides, results]);
 
     const onFastaFileUpload = (e) =>  {
       const file = e.target.files[0];
@@ -101,10 +121,15 @@ export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) 
     guides,
     seqvizZoom,
     setSeqvizZoom,
-    onFastaFileUpload
+    onFastaFileUpload,
+    genome,
+    setGenome,
+    enrichedGuides,
+    reset
   }), [
     DNASequence, selectedEditorName, desiredEdit, error,
     analyse, mutationPos, targetStrand, guides,
-    seqvizZoom, setSeqvizZoom, onFastaFileUpload
+    seqvizZoom, setSeqvizZoom, onFastaFileUpload, genome,
+    setGenome, enrichedGuides, reset
   ]);
 }

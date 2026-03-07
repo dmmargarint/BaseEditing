@@ -3,6 +3,7 @@ import { Sidebar } from './logic/components/Sidebar.tsx';
 import { Workspace } from './logic/components/Workspace.tsx';
 import TopNavBar from './logic/components/TopNavBar.tsx';
 import Footer from './logic/components/Footer.tsx';
+import { AnalysisProvider } from './logic/context/AnalysisContext.tsx';
 
 function App() {
 
@@ -15,16 +16,18 @@ function App() {
   return (
     <>
       <TopNavBar />
-      <GuideProvider>
-        <div className="flex ninety-percent-screen-height w-full bg-slate-50 overflow-hidden">
+      <AnalysisProvider>
+        <GuideProvider>
+          <div className="flex ninety-percent-screen-height w-full bg-slate-50 overflow-hidden">
 
-          <Workspace className="" />
+            <Workspace className="" />
 
-          {/* RIGHT SIDEBAR: Config */}
-          <Sidebar className="bg-white" />
+            {/* RIGHT SIDEBAR: Config */}
+            <Sidebar className="bg-white " />
 
-        </div>
-      </GuideProvider>
+          </div>
+        </GuideProvider>
+      </AnalysisProvider>
       <Footer />
     </>
   );

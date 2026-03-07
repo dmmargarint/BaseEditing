@@ -4,10 +4,11 @@ import { useBaseEditorDesigner } from '../../hooks/useBaseEditorDesigner.ts';
 
 type DesignerType = ReturnType<typeof useBaseEditorDesigner>;
 
-interface GuideContextType {
+export interface GuideContextType {
   designer: DesignerType
   selectedGuide: Guide | null;
   setSelectedGuide: (guide: Guide | null) => void;
+  enrichedGuides: Guide[];
 }
 
 const GuideContext = createContext<GuideContextType | undefined>(undefined);

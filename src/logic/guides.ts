@@ -13,33 +13,26 @@ export type Guide = {
   indexMap: number [], // indexMap[guideIndex] = genomicIndex
   genomicRange: {start: number; end: number}, // [start, end)
   editingWindowGenomic: number[],
-  // length: number,
-  // startPos: number,
-  // endPos: number,
-  // targetStrand: string,
   pam: PAMSite,
-  // protospacer: Protospacer,
   editor: EditorConfig,
-  // editWindowStart: number,
-  // editWindowEnd: number,
   targetEdits: EditablePosition[],
   bystanderEdits: EditablePosition[],
   allEdits: EditablePosition[]
   hitsDesiredSite: boolean,
   numBystanders: number,
-  score: number,
   editRequest: EditRequestConfig,
   postEditSeqPlusStrand: string,
   ui: {
-    displayStart: number;
+    displayStart: number,
+    displayPadding: number,
     uiGenomicSeq: string,
     uiPostEditGenomicSeq?: string
   },
+  analysis?: {},
 }
 
 export type EditablePosition = {
   genomicPos: number;             // absolute genomic position i.e. position in original user input sequence
-  // positionInWindow: number;       // 0-based position within editing window
   positionInProtospacer: number;  // e.g.  0-19 position in the protospacer
   base: string;
   editedBase: string;
@@ -106,7 +99,7 @@ export function designGuidesAroundMutation(
       );
 
       const editablePositions: { targets: EditablePosition[], bystanders: EditablePosition[] }
-        = findEditablePositionsInWindow(guideSeq, indexMap, editingWindowIndices, editRequest);
+        = findEditablePositionsInWindow(guideSeq, absMutationPos, indexMap, editingWindowIndices, editRequest);
 
       const targetEdits = editablePositions.targets;
       const bystanderEdits = editablePositions.bystanders;
@@ -114,8 +107,6 @@ export function designGuidesAroundMutation(
 
       const hitsDesiredSite = !! (allEdits.find(e => e.genomicPos === absMutationPos) || null );
       const numBystanders = bystanderEdits.length;
-      // TODO move the scoring somewhere else
-      const score = 100;
 
       const postEditSeq: string [] = seq.split('');
       allEdits.map((edit: EditablePosition) => {
@@ -123,7 +114,7 @@ export function designGuidesAroundMutation(
       });
       const postEditSeqPlusStrand: string = postEditSeq.join('');
 
-      const displayPadding = 10;
+      const displayPadding = 5;
       const displayStart = Math.max(0, protospacerStartGen - displayPadding);
       const displayEnd = Math.min(seq.length, protospacerEndGen + pam.pamSeq.length + displayPadding);
 
@@ -149,18 +140,20 @@ export function designGuidesAroundMutation(
         allEdits: allEdits,
         hitsDesiredSite,
         numBystanders,
-        score,
         postEditSeqPlusStrand,
-        ui: {displayStart, uiGenomicSeq, uiPostEditGenomicSeq},
+        ui: {displayStart, displayPadding, uiGenomicSeq, uiPostEditGenomicSeq},
       });
     }
   });
+
+  console.log(guides);
 
   return guides;
 }
 
 function findEditablePositionsInWindow(
   guideSeq: string,
+  absMutationPos: number,
   indexMap: number[],
   windowIndices: number[],
   editRequest
@@ -177,7 +170,7 @@ function findEditablePositionsInWindow(
 
     if (baseInGuide !== editRequest.fromBase) continue;
 
-    const isTarget = editRequest.targetPositions?.includes(genomicPos) ?? false;
+    const isTarget = absMutationPos === genomicPos;
 
     const position: EditablePosition = {
       genomicPos: genomicPos,
