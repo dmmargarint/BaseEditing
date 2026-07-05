@@ -1,23 +1,16 @@
-import { useState } from 'react';
-
-const MoreInfoIcons = () => {
-
-  const [toggleMoreInfo, setToggleMoreInfo] = useState<boolean>(false);
-
-  return (
-    <>
-      <span hidden={toggleMoreInfo} onClick={() => setToggleMoreInfo(true)} className="tooltip" data-tip="More Info">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-        </svg>
-      </span>
-      <span hidden={!toggleMoreInfo} onClick={() => setToggleMoreInfo(false)} className="tooltip" data-tip="Less Info">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-        </svg>
-      </span>
-    </>
-  );
-}
+const MoreInfoIcons = ({ expanded }: { expanded: boolean }) => (
+  <span className="tooltip tooltip-left" data-tip={expanded ? 'Collapse' : 'Expand'}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className={`size-5 transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+    </svg>
+  </span>
+);
 
 export default MoreInfoIcons;

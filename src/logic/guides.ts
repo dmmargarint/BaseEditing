@@ -28,7 +28,12 @@ export type Guide = {
     uiGenomicSeq: string,
     uiPostEditGenomicSeq?: string
   },
-  analysis?: {},
+  analysis?: {
+    efficiencyScore?: number;
+    globalRiskScore?: number;
+    alignments?: any[];
+    [key: string]: unknown;
+  },
 }
 
 export type EditablePosition = {
@@ -42,6 +47,8 @@ export type EditablePosition = {
 };
 
 // TODO create type mutation, its a number for now
+const SEARCH_WINDOW_BP = 100;
+
 export function designGuidesAroundMutation(
   seq: string,
   absMutationPos: number,
@@ -50,6 +57,10 @@ export function designGuidesAroundMutation(
 ): Guide[] {
 
   const guides: Guide[] = [];
+
+  const windowStart = Math.max(0, absMutationPos - SEARCH_WINDOW_BP);
+  const windowEnd = Math.min(seq.length, absMutationPos + SEARCH_WINDOW_BP);
+  const searchSeq = seq.substring(windowStart, windowEnd);
 
   let editorsToSearch = [];
 
@@ -62,10 +73,11 @@ export function designGuidesAroundMutation(
   }
 
   editorsToSearch.map((editor: EditorConfig) => {
-    const PAMs: PAMSite[] = findPAMsForEditor(seq, editor);
-
-    console.log(`PAMs for editor ${editor.name}`);
-    console.log(PAMs);
+    const PAMs: PAMSite[] = findPAMsForEditor(searchSeq, editor).map(pam => ({
+      ...pam,
+      startPos: pam.startPos + windowStart,
+      endPos: pam.endPos + windowStart,
+    }));
 
     for (const pam of PAMs) {
       const L: number = editor.guideLength;
@@ -145,8 +157,6 @@ export function designGuidesAroundMutation(
       });
     }
   });
-
-  console.log(guides);
 
   return guides;
 }

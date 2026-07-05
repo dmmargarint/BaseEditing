@@ -6,8 +6,10 @@ const ContactPage = () => {
     <>
       <TopNavBar />
 
-      <div className="flex ninety-percent-screen-height w-full bg-slate-50 overflow-hidden">
-        <p>Welcome to the Contact Page!</p>
+      <div className="flex ninety-percent-screen-height w-full overflow-hidden">
+        <p>
+          *This App*
+        </p>
       </div>
 
       <Footer />

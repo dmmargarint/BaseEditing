@@ -7,12 +7,11 @@ export const ABE8e_SpCas9: EditorConfig = {
     nuclease: "SpCas9",
     pamPatterns: ["NGG"],
     guideLength: 20,
-    activityWindows: { from: 4, to: 8 }, // 1 based
+    activityWindows: { from: 4, to: 8 },
     pamOrientation: "PAM_3prime",
     notes: "High-efficiency ABE with narrow editing window."
 }
 
-//  Some sources claim activity window is 5-7
 export const ABE8e_SaCas9: EditorConfig = {
     name: "ABE8e (SaCas9)",
     targetBase: "A",
@@ -38,7 +37,14 @@ export const BE4max: EditorConfig = {
 
 export const Cas12a: EditorConfig = {
   name: "Cas12a",
-
+  targetBase: "A",
+  productBase: "G",
+  nuclease: "Cas12a",
+  pamPatterns: ["TTTV"],
+  guideLength: 20,
+  activityWindows: { from: 1, to: 20 },
+  pamOrientation: "PAM_5prime",
+  notes: "Placeholder — not yet supported for scoring."
 }
 
 export const ALL_EDITORS: EditorConfig[] = [

@@ -24,7 +24,8 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({
     selectedGuide,
     setSelectedGuide,
-    designer
+    designer,
+    enrichedGuides: designer.enrichedGuides,
   }), [selectedGuide, designer]);
 
   return (

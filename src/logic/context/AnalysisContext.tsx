@@ -1,16 +1,18 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { Guide } from '../guides.ts';
+import type { GenomeConfig } from '../genomeConfigs.ts';
 
-const socket: Socket = io('http://localhost:4000');
+const API_URL = import.meta.env.VITE_API_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 interface AnalysisContextType {
   jobId: string | null;
   progress: number;
-  progressMessage: string;
+  progressMessage: string | null;
   status: 'idle' | 'running' | 'completed' | 'failed';
   results: any;
-  startAnalysis: (guides: Guide[]) => Promise<void>;
+  startAnalysis: (guides: Guide[], genomeObject: GenomeConfig) => Promise<void>;
 }
 
 const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
@@ -21,9 +23,18 @@ export const AnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [progressMessage, setProgressMessage] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'failed'>('idle');
   const [results, setResults] = useState(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (!jobId) return;
+    const socket = io(SOCKET_URL, { withCredentials: true });
+    socketRef.current = socket;
+    return () => { socket.disconnect(); };
+  }, []);
+
+  useEffect(() => {
+    if (!jobId || !socketRef.current) return;
+
+    const socket = socketRef.current;
 
     setResults(null);
     setProgress(10);
@@ -33,14 +44,12 @@ export const AnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     socket.emit('join-job', jobId);
 
     socket.on('status-update', (data) => {
-      console.log('status-update', data);
       setProgress(data.progress);
       setProgressMessage(data.message);
       setStatus('running');
     });
 
     socket.on('analysis-finished', (finalResults) => {
-      console.log('analysis-finished', finalResults);
       setResults(finalResults);
       setProgressMessage('Analysis Complete');
       setStatus('completed');
@@ -56,22 +65,26 @@ export const AnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   }, [jobId]);
 
-  const startAnalysis = async (guides: Guide[]) => {
+  const startAnalysis = async (guides: Guide[], genomeObject: GenomeConfig) => {
     setStatus('running');
     setProgress(10);
 
     const ApiPostData = guides.map(guide => ({
       guideSeq: guide.guideSeq,
       editorName: guide.editor.name,
-      genome: 'hg38', // TODO make this dynamic
+      genome: genomeObject.code,
     }));
 
-    // TODO make the url into a variable
-    const res = await fetch('http://localhost:3000/analyse-guides', {
+    const res = await fetch(`${API_URL}/analyse-guides`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ApiPostData }),
     });
+
+    if (!res.ok) {
+      setStatus('failed');
+      return;
+    }
 
     const data = await res.json();
     setJobId(data.jobId);

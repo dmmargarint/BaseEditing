@@ -4,8 +4,7 @@ import { useDesigner } from '../context/GuideContext.tsx';
 export function SeqvizOverview() {
   const {designer, selectedGuide} = useDesigner();
 
-  const onSeqvizHighlight = (e ) => {
-    console.log(e);
+  const onSeqvizHighlight = (e: any) => {
     if (e.length !== 1)
       return;
 
@@ -20,19 +19,25 @@ export function SeqvizOverview() {
 
   return (
     <>
-      <div className="">
-        <div className="m-2">
-          <span className="text-sm">Zoom</span>
-          <div className="inline p-2">-</div>
-          <input type="range"
-                 min="11"
-                 max="70"
-                 value={designer.seqvizZoom}
-                 className="inline w-1/6 range range-info range-xs"
-                 onChange={e => designer.setSeqvizZoom(e.target.valueAsNumber)}/>
-          <div className="inline p-2">+</div>
-        </div>
-
+      <div className="flex items-center gap-2 m-2">
+        <span className="text-xs text-gray-500 font-medium">Zoom</span>
+        <button
+          className="btn btn-xs btn-ghost px-1 text-gray-400 hover:text-gray-600"
+          onClick={() => designer.setSeqvizZoom(Math.max(11, designer.seqvizZoom - 10))}>
+          −
+        </button>
+        <input type="range"
+               min="11"
+               max="70"
+               value={designer.seqvizZoom}
+               className="w-32 range range-info range-xs"
+               onChange={e => designer.setSeqvizZoom(e.target.valueAsNumber)}/>
+        <button
+          className="btn btn-xs btn-ghost px-1 text-gray-400 hover:text-gray-600"
+          onClick={() => designer.setSeqvizZoom(Math.min(70, designer.seqvizZoom + 10))}>
+          +
+        </button>
+        <span className="text-xs w-8 text-center tabular-nums text-gray-400">{designer.seqvizZoom}%</span>
       </div>
 
       <SeqViz

@@ -6,8 +6,16 @@ const AboutPage = () => {
     <>
       <TopNavBar />
 
-      <div className="flex ninety-percent-screen-height w-full bg-slate-50 overflow-hidden">
-        <p>Welcome to the About Page!</p>
+      <div className="bg-slate-50 overflow-hidden">
+        <p>
+          *This App* was created to help students and researchers find guide RNAs for CRISPR base editing (BE) applications
+          in a visually intuitive manner.
+
+          **The guides and alignment information provided by *the app* must be further validated and cannot be solely relied upon.**
+        </p>
+        <p>
+          Specifically,
+        </p>
       </div>
 
       <Footer />

@@ -1,37 +1,26 @@
 import type { Guide } from '../logic/guides.ts';
-import { useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export function useGuideTable(guides: Guide[]) {
   const [sortBy, setSortBy] = useState<"score" | "bystanders" | "hitsDesiredSite">("bystanders");
 
-  // const { selectedGuide } = useGuideSelection();
-
-  // const [selectedGuideSeq, setSelectedGuideSeq] = useState<string | null>(null);
-
-  // const sortedGuides: Guide[] = useMemo((): Guide[] => {
-  //   if (sortBy === "score") {
-  //     // TODO rewrite
-  //     return guides;
-  //   }
-  //
-  //   if (sortBy === "bystanders") {
-  //     return [...guides].sort((a, b) => (a.numBystanders ?? 0) - (b.numBystanders ?? 0));
-  //   }
-  //
-  //   if (sortBy === "hitsDesiredSite") {
-  //     //
-  //   }
-  // }, [guides, sortBy]);
-
-  const sortedGuides = guides;
-
-  console.log('selectedGuide', selectedGuide);
+  const sortedGuides = useMemo(() => {
+    const copy = [...guides];
+    switch (sortBy) {
+      case 'score':
+        return copy.sort((a, b) =>
+          (b.analysis?.efficiencyScore ?? -1) - (a.analysis?.efficiencyScore ?? -1)
+        );
+      case 'bystanders':
+        return copy.sort((a, b) => a.numBystanders - b.numBystanders);
+      case 'hitsDesiredSite':
+        return copy.sort((a, b) => Number(b.hitsDesiredSite) - Number(a.hitsDesiredSite));
+    }
+  }, [guides, sortBy]);
 
   return {
     sortBy,
     setSortBy,
     sortedGuides,
-    // selectedGuide,
-    // setSelectedGuide: setSelectedGuideSeq,
   };
 }
