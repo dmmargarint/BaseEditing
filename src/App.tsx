@@ -2,7 +2,6 @@ import { GuideProvider, useDesigner } from './logic/context/GuideContext.tsx';
 import { Sidebar } from './logic/components/Sidebar.tsx';
 import { Workspace } from './logic/components/Workspace.tsx';
 import TopNavBar from './logic/components/TopNavBar.tsx';
-import Footer from './logic/components/Footer.tsx';
 import { AnalysisProvider } from './logic/context/AnalysisContext.tsx';
 import { GuidesView } from './logic/components/GuidesView.tsx';
 import { useState, useEffect, useRef, useCallback } from 'react';
