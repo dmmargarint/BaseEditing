@@ -5,10 +5,6 @@ import { fasta } from 'bioinformatics-parser';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const CHROMS = [
-  ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
-  'chrX', 'chrY', 'chrM',
-];
 
 type InputMode = 'paste' | 'fetch' | 'file';
 
@@ -43,7 +39,6 @@ function EditorConfigPanel({
 }: Props) {
   const [inputMode, setInputMode] = useState<InputMode>('paste');
   const [draftSequence, setDraftSequence] = useState('');
-  const [chrom, setChrom] = useState('chr1');
   const [position, setPosition] = useState('');
   const [windowSize, setWindowSize] = useState(150);
   const [fetchLoading, setFetchLoading] = useState(false);
@@ -51,8 +46,17 @@ function EditorConfigPanel({
   const [fetchedMutationPos, setFetchedMutationPos] = useState<number | null>(null);
   const modalRef = useRef<HTMLDialogElement>(null);
 
+  const selectedGenomeConfig = ALL_GENOMES.find(g => g.code === genome) ?? ALL_GENOMES[0];
+  const [chrom, setChrom] = useState(selectedGenomeConfig.chroms[0]);
+
+  const handleGenomeChange = (code: string) => {
+    setGenome(code);
+    const config = ALL_GENOMES.find(g => g.code === code) ?? ALL_GENOMES[0];
+    setChrom(config.chroms[0]);
+  };
+
   useEffect(() => {
-    if (!textInput) modalRef.current?.showModal();
+    if (!textInput && window.innerWidth >= 768) modalRef.current?.showModal();
   }, []);
 
   const openModal = () => {
@@ -88,7 +92,7 @@ function EditorConfigPanel({
       setDraftSequence(data.sequence);
       setFetchedMutationPos(windowSize + 1);
     } catch {
-      setFetchError('Could not fetch sequence. Check the backend endpoint.');
+      setFetchError('Could not fetch sequence. Please try again or contact the author.');
     } finally {
       setFetchLoading(false);
     }
@@ -167,12 +171,12 @@ function EditorConfigPanel({
                 Fetches a sequence window from the reference genome around a genomic coordinate.
               </p>
               <div className="grid grid-cols-4 gap-2">
-                <div className="flex flex-col gap-1">
+                <div className="col-span-2 flex flex-col gap-1 min-w-0">
                   <label className="text-xs font-medium">Genome</label>
                   <select
                     className="select select-sm w-full"
                     value={genome}
-                    onChange={(e) => setGenome(e.target.value)}
+                    onChange={(e) => handleGenomeChange(e.target.value)}
                   >
                     {ALL_GENOMES.map((g) => <option key={g.code} value={g.code}>{g.name}</option>)}
                   </select>
@@ -184,7 +188,7 @@ function EditorConfigPanel({
                     value={chrom}
                     onChange={(e) => setChrom(e.target.value)}
                   >
-                    {CHROMS.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {selectedGenomeConfig.chroms.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1">

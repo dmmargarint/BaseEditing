@@ -128,6 +128,13 @@ function AppLayout() {
 function App() {
   return (
     <>
+      <div className="md:hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-8 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17h6M10 21h4M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
+        </svg>
+        <p className="text-lg font-semibold text-gray-700 mb-2">Desktop only</p>
+        <p className="text-sm text-gray-400">This tool requires a larger screen. Please open it on a laptop or desktop.</p>
+      </div>
       <TopNavBar />
       <AnalysisProvider>
         <GuideProvider>

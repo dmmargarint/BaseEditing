@@ -13,6 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.1.17",
     "bioinformatics-parser": "^1.1.2",
     "daisyui": "^5.5.5",

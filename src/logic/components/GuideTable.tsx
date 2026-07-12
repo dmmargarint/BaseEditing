@@ -175,7 +175,7 @@ function OffTargetTable({ alignments }: { alignments: any[] }) {
         </tbody>
       </table>
 
-      <div className="mt-3 flex gap-4 text-[11px] ">
+      <div className="mt-3 flex gap-4 text-[11px]">
         <span><b className="">MM</b> = mismatches vs. guide</span>
         <span><b className="">Binding</b> = CFD score (SpCas9) or MIT score (SaCas9)</span>
         <span><b className="">Final Risk</b> = Binding × Edit Risk</span>
