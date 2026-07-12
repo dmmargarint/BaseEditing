@@ -8,7 +8,6 @@ edited DNA regions.
 
 <h3>How it works:</h3>
 The user provides DNA sequence and marks the position they want to edit by either selecting the mutation in the genome viewer or inserting the position number, along with the desired base change (e.g. A→G or C→T). The platform then searches a ±100 bp window around your target for all valid protospacer sites for each compatible editor, and returns only the guides that actually place your target base within the editing window.
-
 For each guide, the platform distinguishes between the target edit (your intended change) and bystander edits — other bases of the same type that fall within the activity window and would also be converted. Bystander edits are shown alongside the intended change so you can assess whether a guide is suitable for your application.
 
 <h3>DNA Input types:</h3>
@@ -16,16 +15,14 @@ For each guide, the platform distinguishes between the target edit (your intende
 <b>Fetch from genome</b> - Retrieve a specific sequence directly from a database by providing the chromosome and genomic coordinates. You can define the size of the flanking region (± window size) around your target. 
 <b>Upload Fasta</b> - Upload a standard .fasta or .fa file for processing.
 
-Supported editors:
+<h3>Supported editors:</h3>
 <b>ABE8e (SpCas9)</b> — converts A to G using an NGG PAM, with an activity window at positions 4–8.
 <b>ABE8e (SaCas9)</b> — converts A to G using an NNGRRT PAM, with a broader activity window at positions 3–14.
 <b>BE4max (SpCas9)</b> — converts C to T using an NGG PAM, with an activity window at positions 3–8.
 <b>Auto-Select</b> - automatically picks the right editor(s) based on the base change requested.
-
 <h3>Off-target analysis:</h3>
 Unlike general-purpose CRISPR platforms, our off-target finder is tailored for BE applications. For each off-target alignment we calculate whether the guide can bind to the locus, and if it can bind, whether the editor can actually edit the off-target site. This gives rise to a binding score and an editing risk, which are multiplied together to produce the Final Risk. An off-target with a perfect binding score but no target base in the editing window gets a final risk of 0. Binding scores use CFD scoring (Doench et al. 2016) for SpCas9-based editors and MIT scoring (Hsu et al. 2013) for SaCas9. 
 Guides are also assigned an efficiency score based on GC content, the probability of at least one edit occurring within the activity window given each position's activity weights, and a penalty for Pol III transcription termination motifs (TTTT).
-
 The guides and scores provided by this platform must be further validated experimentally and cannot be solely relied upon.
 
 Please <a href="mailto:dmmargarint@gmail.com" class="text-blue-600 underline">email the author</a> for queries, requests or feedback.
