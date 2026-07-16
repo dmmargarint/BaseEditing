@@ -5,15 +5,8 @@ export function SeqvizOverview() {
   const {designer, selectedGuide} = useDesigner();
 
   const onSeqvizHighlight = (e: any) => {
-    if (e.length !== 1)
-      return;
-
-    let mutationPos;
-      if (e.clockwise)
-        mutationPos = e.end;
-      else
-        mutationPos = e.start;
-
+    if (e.start == null) return;
+    const mutationPos = e.clockwise ? e.end : e.start;
     designer.setMutationPos(mutationPos);
   }
 
@@ -41,7 +34,6 @@ export function SeqvizOverview() {
       </div>
 
       <SeqViz
-        // name="DNA Sequence"
         seq={designer.DNASequence}
         annotations={designer.mutationPos ? [
           { name: 'mutation',
@@ -52,7 +44,7 @@ export function SeqvizOverview() {
         ] : []
         }
         viewer="linear"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', cursor: 'crosshair' }}
         onSelection={(s) => {
           onSeqvizHighlight(s);
         }}
@@ -73,7 +65,12 @@ export function SeqvizOverview() {
           start: selectedGuide.pam.startPos,
           end: selectedGuide.pam.endPos,
           clockwise: true
-        }: undefined}
+        } : {
+          start: designer.mutationPos - 1,
+          end: designer.mutationPos,
+          clockwise: true
+        }}
+
       />
     </>
   );

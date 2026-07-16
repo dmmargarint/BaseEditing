@@ -17,7 +17,8 @@ export function GuideProvider({ children }: { children: React.ReactNode }) {
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
 
   const designer = useBaseEditorDesigner({
-    onAnalyseComplete: () => setSelectedGuide(null)
+    onAnalyseComplete: () => setSelectedGuide(null),
+    onReset: () => setSelectedGuide(null),
   });
 
   // Memoize the value to prevent unnecessary re-renders

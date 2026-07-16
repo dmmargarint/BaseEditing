@@ -9,10 +9,10 @@ import { ALL_GENOMES, type GenomeConfig } from '../logic/genomeConfigs.ts';
 
 interface DesignerProps {
   onAnalyseComplete?: () => void;
+  onReset?: () => void;
 }
 
-export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) {
-    // const [DNASequence, setDNASequence] = useState<string>("TACCAGGCGTTCCTGGAGAACATGGAGCGATCAGACCCCCTGGGCTTCAGGGGATCAGAGG");
+export function useBaseEditorDesigner ({onAnalyseComplete, onReset}: DesignerProps = {}) {
     const [DNASequence, setDNASequence] = useState<string>("");
     const [genome, setGenome] = useState<string>("hg38");
     const [error, setError] = useState<string>("");
@@ -29,7 +29,8 @@ export function useBaseEditorDesigner ({onAnalyseComplete}: DesignerProps = {}) 
     const reset = useCallback(() => {
       setGuides([]);
       setAnalysedOnce(false);
-    }, [setGuides]);
+      onReset?.();
+    }, [setGuides, onReset]);
 
     const editor: EditorConfig | "auto" = useMemo(
         () => {

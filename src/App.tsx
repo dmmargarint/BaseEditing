@@ -103,7 +103,7 @@ function AppLayout() {
 
       {/* Collapsed tab — visible when panel is hidden but guides exist */}
       {hasGuides && collapsed && (
-        <div className="border-t border-gray-200 px-4 py-1.5 flex items-center gap-3 shrink-0">
+        <div className="border-t border-gray-200 px-4 py-1.5 flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={() => setCollapsed(false)}
             className="flex items-center gap-1.5 text-xs hover:text-slate-900 transition-colors"
