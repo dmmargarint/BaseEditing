@@ -127,19 +127,27 @@ function AppLayout() {
 }
 
 function App() {
+  const [bannerDismissed, setBannerDismissed] = useState(false);
   usePageMeta(
     'Create Guide RNAs for Base Editing Applications',
     'Design guide RNAs for CRISPR base editing. Supports ABE8e and BE4max with SpCas9 and SaCas9, bystander edit detection, and off-target risk scoring.'
   );
   return (
     <>
-      <div className="md:hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-8 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17h6M10 21h4M4 3h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" />
-        </svg>
-        <p className="text-lg font-semibold text-gray-700 mb-2">Desktop only</p>
-        <p className="text-sm text-gray-400">This tool requires a larger screen. Please open it on a laptop or desktop.</p>
-      </div>
+      {!bannerDismissed && (
+        <div className="md:hidden flex items-center justify-between gap-3 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-sm text-amber-800">
+          <span>This tool is designed for desktop use. Some features may not work on small screens.</span>
+          <button
+            onClick={() => setBannerDismissed(true)}
+            className="shrink-0 text-amber-500 hover:text-amber-800 transition-colors"
+            aria-label="Dismiss"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
       <TopNavBar />
       <AnalysisProvider>
         <GuideProvider>
