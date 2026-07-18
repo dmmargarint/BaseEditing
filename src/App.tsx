@@ -5,6 +5,7 @@ import TopNavBar from './logic/components/TopNavBar.tsx';
 import { AnalysisProvider } from './logic/context/AnalysisContext.tsx';
 import { GuidesView } from './logic/components/GuidesView.tsx';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { usePageMeta } from './hooks/usePageMeta.ts';
 
 const MIN_SIDEBAR = 280;
 const MAX_SIDEBAR = 900;
@@ -126,6 +127,10 @@ function AppLayout() {
 }
 
 function App() {
+  usePageMeta(
+    'Create Guide RNAs for Base Editing Applications',
+    'Design guide RNAs for CRISPR base editing. Supports ABE8e and BE4max with SpCas9 and SaCas9, bystander edit detection, and off-target risk scoring.'
+  );
   return (
     <>
       <div className="md:hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-8 text-center">

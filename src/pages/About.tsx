@@ -1,5 +1,6 @@
 import TopNavBar from '../logic/components/TopNavBar.tsx';
 import Footer from '../logic/components/Footer.tsx';
+import { usePageMeta } from '../hooks/usePageMeta.ts';
 
 const aboutText = `
 <h3>Introduction</h3>
@@ -29,6 +30,10 @@ Please <a href="mailto:dmmargarint@gmail.com" class="text-blue-600 underline">em
 `;
 
 const AboutPage = () => {
+  usePageMeta(
+    'About — basediting.org',
+    'Learn how basediting.org works: DNA input types, supported base editors, bystander edit detection, and off-target risk scoring.'
+  );
   return (
     <>
       <TopNavBar />
