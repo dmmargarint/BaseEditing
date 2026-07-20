@@ -26,9 +26,7 @@ export const AnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { withCredentials: true });
-    socketRef.current = socket;
-    return () => { socket.disconnect(); };
+    return () => { socketRef.current?.disconnect(); };
   }, []);
 
   useEffect(() => {
@@ -66,6 +64,9 @@ export const AnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [jobId]);
 
   const startAnalysis = async (guides: Guide[], genomeObject: GenomeConfig) => {
+    if (!socketRef.current) {
+      socketRef.current = io(SOCKET_URL, { withCredentials: true });
+    }
     setStatus('running');
     setProgress(10);
 
