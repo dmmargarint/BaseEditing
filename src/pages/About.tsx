@@ -39,6 +39,7 @@ const AboutPage = () => {
       <TopNavBar />
 
       <div className="max-w-5xl mx-auto px-8 py-10 text-[14px]">
+        <h1 className="text-xl font-semibold text-gray-800 mb-6 text-center">About - basediting.org</h1>
         <div
           className="prose prose-sm whitespace-pre-wrap max-w-none"
           dangerouslySetInnerHTML={{ __html: aboutText }}
