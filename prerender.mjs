@@ -42,7 +42,7 @@ for (const route of routes) {
 
   const dir = resolve(__dirname, `dist${route.path}`);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(`${dir}/index.html`, html);
+  writeFileSync(resolve(__dirname, `dist${route.path}.html`), html);
   console.log(`  ✓ ${route.path}`);
 }
 
