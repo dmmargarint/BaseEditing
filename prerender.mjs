@@ -7,6 +7,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const routes = [
   {
+    path: '/',
+    title: 'Base Editing Guide RNA Design Tool',
+    description: 'Design guide RNAs for CRISPR base editing applications. Supports ABE8e and BE4max with SpCas9 and SaCas9, with bystander edit detection and off-target risk scoring.',
+    canonical: 'https://basediting.org/',
+  },
+  {
     path: '/about',
     title: 'About — basediting.org',
     description: 'Learn how basediting.org works: DNA input types, supported base editors (ABE8e, BE4max), bystander edit detection, and off-target risk scoring.',
@@ -40,9 +46,15 @@ for (const route of routes) {
     .replace(/(<meta property="og:description" content=")[^"]*(")/,  `$1${route.description}$2`)
     .replace(/(<meta property="og:url" content=")[^"]*(")/,          `$1${route.canonical}$2`);
 
-  const dir = resolve(__dirname, `dist${route.path}`);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(__dirname, `dist${route.path}.html`), html);
+  let outputPath;
+  if (route.path === '/') {
+    outputPath = resolve(__dirname, 'dist/index.html');
+  } else {
+    const dir = resolve(__dirname, `dist${route.path}`);
+    mkdirSync(dir, { recursive: true });
+    outputPath = resolve(__dirname, `dist${route.path}.html`);
+  }
+  writeFileSync(outputPath, html);
   console.log(`  ✓ ${route.path}`);
 }
 

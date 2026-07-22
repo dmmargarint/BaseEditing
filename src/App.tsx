@@ -49,7 +49,7 @@ function AppLayout() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[90vh] w-full overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 w-full overflow-hidden">
 
       {/* SeqViz and Config */}
       <div
@@ -128,12 +128,19 @@ function AppLayout() {
 
 function App() {
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [introDismissed, setIntroDismissed] = useState(() => localStorage.getItem('intro-dismissed') === '1');
+
+  function dismissIntro() {
+    localStorage.setItem('intro-dismissed', '1');
+    setIntroDismissed(true);
+  }
+
   usePageMeta(
     'Create Guide RNAs for Base Editing Applications',
     'Design guide RNAs for CRISPR base editing. Supports ABE8e and BE4max with SpCas9 and SaCas9, bystander edit detection, and off-target risk scoring.'
   );
   return (
-    <>
+    <div className="flex flex-col h-screen">
       {!bannerDismissed && (
         <div className="md:hidden flex items-center justify-between gap-3 bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-sm text-amber-800">
           <span>This tool is designed for desktop use. Some features may not work on small screens.</span>
@@ -149,12 +156,29 @@ function App() {
         </div>
       )}
       <TopNavBar />
+      {!introDismissed && (
+        <section className="shrink-0 border-b border-gray-100 bg-white px-8 py-2.5 flex items-center justify-center relative">
+          <div className="text-center">
+            <h1 className="text-base font-semibold text-gray-800">Base Editing Guide RNA Design Tool</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Design guide RNAs for CRISPR base editing applications. Supports ABE8e and BE4max with SpCas9 and SaCas9, with bystander edit detection and off-target risk scoring.</p>
+          </div>
+          <button
+            onClick={dismissIntro}
+            className="absolute right-4 text-gray-400 hover:text-gray-700 transition-colors"
+            aria-label="Dismiss"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </section>
+      )}
       <AnalysisProvider>
         <GuideProvider>
           <AppLayout />
         </GuideProvider>
       </AnalysisProvider>
-    </>
+    </div>
   );
 }
 
